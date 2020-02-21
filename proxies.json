@@ -1,4 +1,28 @@
 {
   "$schema": "http://json.schemastore.org/proxies",
-  "proxies": {}
+  "proxies": {
+    "ServiceProviderConfig": {
+      "matchCondition": {
+          "route": "scim/v2/ServiceProviderConfig"
+      },
+      "backendUri": "https://scimps.azurewebsites.net/api/ServiceProviderConfig"
+  },
+  "ResourceTypes": {
+    "matchCondition": {
+        "route": "scim/v2/ResourceTypes"
+    },
+    "backendUri": "https://scimps.azurewebsites.net/api/resourcetypes"
+},"Schemas": {
+  "matchCondition": {
+      "route": "scim/v2/Schemas"
+  },
+  "backendUri": "https://scimps.azurewebsites.net/api/Schemas"
+},
+"users": {
+  "matchCondition": {
+      "route": "scim/v2/users"
+  },
+  "backendUri": "https://scimps.azurewebsites.net/api/users"
+}
+  }
 }
