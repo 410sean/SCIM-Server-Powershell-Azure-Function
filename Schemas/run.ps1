@@ -36,7 +36,7 @@ $body='{
       "attributes": [
         {
           "name": "userName",
-          "description": "Teammate's alias. REQUIRED.",
+          "description": "Teammate''s alias. REQUIRED.",
           "type": "string",
           "multiValued": false,
           "required": true,
@@ -47,7 +47,7 @@ $body='{
         },
         {
           "name": "name",
-          "description": "The components of the teammate's real name. REQUIRED",
+          "description": "The components of the teammate''s real name. REQUIRED",
           "type": "complex",
           "multiValued": false,
           "required": true,
@@ -147,7 +147,7 @@ $body='{
         },
         {
           "name": "profileUrl",
-          "description": "A fully qualified URL pointing to a page representing the Teammate's online profile. UNSUPPORTED",
+          "description": "A fully qualified URL pointing to a page representing the Teammate''s online profile. UNSUPPORTED",
           "type": "reference",
           "referenceTypes": [
             "external"
@@ -161,7 +161,7 @@ $body='{
         },
         {
           "name": "title",
-          "description": "The user's title, such as 'Vice President.' UNSUPPORTED",
+          "description": "The user''s title, such as ''Vice President.'' UNSUPPORTED",
           "type": "string",
           "multiValued": false,
           "required": false,
@@ -183,7 +183,7 @@ $body='{
         },
         {
           "name": "preferredLanguage",
-          "description": "Indicates the Teammate's preferred written or spoken language. UNSUPPORTED",
+          "description": "Indicates the Teammate''s preferred written or spoken language. UNSUPPORTED",
           "type": "string",
           "multiValued": false,
           "required": false,
@@ -194,7 +194,7 @@ $body='{
         },
         {
           "name": "locale",
-          "description": "Used to indicate the Teammate's default location for purposes of localizing items such as currency, date time format, or numerical representations. UNSUPPORTED",
+          "description": "Used to indicate the Teammate''s default location for purposes of localizing items such as currency, date time format, or numerical representations. UNSUPPORTED",
           "type": "string",
           "multiValued": false,
           "required": false,
@@ -205,7 +205,7 @@ $body='{
         },
         {
           "name": "timezone",
-          "description": "The Teammate's time zone in the 'Olson' time zone database format, e.g., 'America/Los_Angeles'. UNSUPPORTED",
+          "description": "The Teammate''s time zone in the ''Olson'' time zone database format, e.g., ''America/Los_Angeles''. UNSUPPORTED",
           "type": "string",
           "multiValued": false,
           "required": false,
@@ -216,7 +216,7 @@ $body='{
         },
         {
           "name": "active",
-          "description": "A Boolean value indicating the Teammate's administrative status. (Default to true)",
+          "description": "A Boolean value indicating the Teammate''s administrative status. (Default to true)",
           "type": "boolean",
           "multiValued": false,
           "required": false,
@@ -225,7 +225,7 @@ $body='{
         },
         {
           "name": "password",
-          "description": "The Teammate's cleartext password. (Default to a random string)",
+          "description": "The Teammate''s cleartext password. (Default to a random string)",
           "type": "string",
           "multiValued": false,
           "required": false,
@@ -268,7 +268,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the email's function. UNSUPPORTED",
+              "description": "A label indicating the email''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -326,7 +326,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the phone number's function. UNSUPPORTED",
+              "description": "A label indicating the phone number''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -387,7 +387,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the instant messaging's function. UNSUPPORTED",
+              "description": "A label indicating the instant messaging''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -409,7 +409,7 @@ $body='{
             },
             {
               "name": "primary",
-              "description": "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger.  The primary attribute value 'true' MUST appear no more than once. UNSUPPORTED",
+              "description": "A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger.  The primary attribute value ''true'' MUST appear no more than once. UNSUPPORTED",
               "type": "boolean",
               "multiValued": false,
               "required": false,
@@ -454,7 +454,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the photo's function. UNSUPPORTED",
+              "description": "A label indicating the photo''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -469,7 +469,7 @@ $body='{
             },
             {
               "name": "primary",
-              "description": "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail.  The primary attribute value 'true' MUST appear no more than once. UNSUPPORTED",
+              "description": "A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail.  The primary attribute value ''true'' MUST appear no more than once. UNSUPPORTED",
               "type": "boolean",
               "multiValued": false,
               "required": false,
@@ -556,7 +556,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the address' function. UNSUPPORTED",
+              "description": "A label indicating the address'' function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -592,7 +592,7 @@ $body='{
           "subAttributes": [
             {
               "name": "value",
-              "description": "The identifier of the Teammate's group. UNSUPPORTED",
+              "description": "The identifier of the Teammate''s group. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -603,7 +603,7 @@ $body='{
             },
             {
               "name": "$ref",
-              "description": "The URI of the corresponding 'Group' resource to which the teammate belongs. UNSUPPORTED",
+              "description": "The URI of the corresponding ''Group'' resource to which the teammate belongs. UNSUPPORTED",
               "type": "reference",
               "referenceTypes": [
                 "User",
@@ -629,7 +629,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the group's function. UNSUPPORTED",
+              "description": "A label indicating the group''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -677,7 +677,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the entitlement's function. UNSUPPORTED",
+              "description": "A label indicating the entitlement''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
@@ -730,7 +730,7 @@ $body='{
             },
             {
               "name": "type",
-              "description": "A label indicating the role's function. UNSUPPORTED",
+              "description": "A label indicating the role''s function. UNSUPPORTED",
               "type": "string",
               "multiValued": false,
               "required": false,
