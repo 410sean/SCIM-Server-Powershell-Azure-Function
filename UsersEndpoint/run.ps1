@@ -1,7 +1,7 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata)
+param($Request, $TriggerMetadata, $inputTable)
 <#GET for retrieval of resources; POST for creation,
 searching, and bulk modification; PUT for attribute replacement
 within resources; PATCH for partial update of attributes; and DELETE
@@ -23,19 +23,29 @@ else {
     switch($Request.method){
         "GET"{
             if ($Request.params.path){
-                #get a user
+                $body=$inputTable
             }else{
                 #get all users (pagination)
+                $body=$inputTable
             }
         }
         "POST"{
             #create user
+            Push-OutputBinding -Name outputTable -Value ({
+                $Request.body
+            })
         }
         "PATCH"{
             #updte user
+            Push-OutputBinding -Name outputTable -Value ({
+                $Request.body
+            })
         }
         "PUT"{
             #update user
+            Push-OutputBinding -Name outputTable -Value ({
+                $Request.body
+            })
         }
         "DELETE"{
             #remove user
@@ -52,6 +62,8 @@ else {
     $status = [HttpStatusCode]::BadRequest
     $body = "Please pass a name on the query string or in the request body."
 }
+
+
 
 $status = [HttpStatusCode]::OK
 # Associate values to output bindings by calling 'Push-OutputBinding'.

@@ -14,6 +14,24 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
+    },
+    {
+      "type": "table",
+      "name": "inputTable",
+      "tableName": "scimUsers",
+      "take": 100,
+      "filter": "",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "outputTable",
+      "tableName": "scimUsers",
+      "take": 100,
+      "filter": "",
+      "connection": "AzureWebJobsStorage",
+      "direction": "out"
     }
   ]
 }
