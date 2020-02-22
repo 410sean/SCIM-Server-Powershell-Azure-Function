@@ -34,12 +34,12 @@ $body='{
           "urn:ietf:params:scim:schemas:core:2.0:ResourceType"
         ],
         "name": "User",
-        "description": "Front teammate account",
+        "description": "Sean built this",
         "endpoint": "/Users",
         "schema": "urn:ietf:params:scim:schemas:core:2.0:User",
         "meta": {
           "resourceType": "ResourceType",
-          "location": "https://scim.frontapp.com/ResourceTypes/User"
+          "location": "https://scimps.azurewebsites.net/api/ResourceTypes/User"
         }
       }
     ]
