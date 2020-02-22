@@ -2,7 +2,10 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
-
+<#GET for retrieval of resources; POST for creation,
+searching, and bulk modification; PUT for attribute replacement
+within resources; PATCH for partial update of attributes; and DELETE
+for removing resources#>
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
@@ -20,7 +23,8 @@ else {
     $status = [HttpStatusCode]::BadRequest
     $body = "Please pass a name on the query string or in the request body."
 }
-
+$body=$Request
+$status = [HttpStatusCode]::OK
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
