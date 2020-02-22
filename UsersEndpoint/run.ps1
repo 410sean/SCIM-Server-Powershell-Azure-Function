@@ -17,13 +17,42 @@ if (-not $name) {
 
 if ($name) {
     $status = [HttpStatusCode]::OK
-    $body = "Hello $name"
+    $body=$Request
 }
 else {
+    switch($Request.method){
+        "GET"{
+            if ($Request.params.path){
+                #get a user
+            }else{
+                #get all users (pagination)
+            }
+        }
+        "POST"{
+            #create user
+        }
+        "PATCH"{
+            #updte user
+        }
+        "PUT"{
+            #update user
+        }
+        "DELETE"{
+            #remove user
+        }
+
+
+
+
+    }
+    
+    
+    
+    
     $status = [HttpStatusCode]::BadRequest
     $body = "Please pass a name on the query string or in the request body."
 }
-$body=$Request
+
 $status = [HttpStatusCode]::OK
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
