@@ -1,11 +1,11 @@
 {
   "$schema": "http://json.schemastore.org/proxies",
   "proxies": { 
-    "users": {
+    "proxy1": {
       "matchCondition": {
-          "route": "api/users/{*id}"
+          "route": "api/users/{*path}"
       },
-      "backendUri": "https://scimps.azurewebsites.net/api/user"
+      "backendUri": "https://localhost/api/users"
     }
    }
 }
