@@ -3,9 +3,9 @@
   "proxies": { 
     "proxy1": {
       "matchCondition": {
-          "route": "api/users/{*path}"
+          "route": "api/users{*path}"
       },
-      "backendUri": "https://localhost/api/users"
+      "backendUri": "https://localhost/api/usersEndpoint"
     }
    }
 }
