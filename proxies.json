@@ -1,9 +1,15 @@
 {
   "$schema": "http://json.schemastore.org/proxies",
   "proxies": { 
-    "proxy1": {
+    "usersPath": {
       "matchCondition": {
-          "route": "api/users{*path}"
+          "route": "api/users/{*path}"
+      },
+      "backendUri": "https://localhost/api/usersEndpoint"
+    },
+    "users": {
+      "matchCondition": {
+          "route": "api/users"
       },
       "backendUri": "https://localhost/api/usersEndpoint"
     }
