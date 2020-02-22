@@ -12,6 +12,30 @@
           "route": "api/users"
       },
       "backendUri": "https://localhost/api/usersEndpoint"
+    },
+    "schemasPath": {
+      "matchCondition": {
+          "route": "api/schemas/{*path}"
+      },
+      "backendUri": "https://localhost/api/schemasEndpoint"
+    },
+    "schemas": {
+      "matchCondition": {
+          "route": "api/schemas"
+      },
+      "backendUri": "https://localhost/api/schemasEndpoint"
+    },
+    "ResourceTypesEndpointPath": {
+      "matchCondition": {
+          "route": "api/ResourceTypes/{*path}"
+      },
+      "backendUri": "https://localhost/api/ResourceTypesEndpointEndpoint"
+    },
+    "ResourceTypesEndpoint": {
+      "matchCondition": {
+          "route": "api/ResourceTypes"
+      },
+      "backendUri": "https://localhost/api/ResourceTypesEndpoint"
     }
    }
 }
