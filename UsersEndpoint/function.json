@@ -23,15 +23,6 @@
       "filter": "",
       "connection": "AzureWebJobsStorage",
       "direction": "in"
-    },
-    {
-      "type": "table",
-      "name": "outputTable",
-      "tableName": "scimUsers",
-      "take": 100,
-      "filter": "",
-      "connection": "AzureWebJobsStorage",
-      "direction": "out"
     }
   ]
 }
