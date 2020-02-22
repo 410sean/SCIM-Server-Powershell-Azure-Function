@@ -25,13 +25,13 @@
       },
       "backendUri": "https://localhost/api/schemasEndpoint"
     },
-    "ResourceTypesEndpointPath": {
+    "ResourceTypesPath": {
       "matchCondition": {
           "route": "api/ResourceTypes/{*path}"
       },
-      "backendUri": "https://localhost/api/ResourceTypesEndpointEndpoint"
+      "backendUri": "https://localhost/api/ResourceTypesEndpoint"
     },
-    "ResourceTypesEndpoint": {
+    "ResourceTypes": {
       "matchCondition": {
           "route": "api/ResourceTypes"
       },
