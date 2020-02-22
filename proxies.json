@@ -5,7 +5,7 @@
       "matchCondition": {
           "route": "api/users/{*id}"
       },
-      "backendUri": "https://scimps.azurewebsites.net/api/users"
+      "backendUri": "https://scimps.azurewebsites.net/api/user"
     }
    }
 }
