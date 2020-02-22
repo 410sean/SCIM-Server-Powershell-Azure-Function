@@ -3,9 +3,9 @@
   "proxies": { 
     "users": {
       "matchCondition": {
-          "route": "api/users/{*all}"
+          "route": "api/users/{*id}"
       },
-      "backendUri": "https://scimps.azurewebsites.net/api/user"
+      "backendUri": "https://scimps.azurewebsites.net/api/users"
     }
    }
 }
