@@ -8,7 +8,7 @@ within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
-$schema='userName','displayName','companyCode','departmentCode','BusinessUnitCode','jobCode','role','active'
+$schema=@('id','userName','displayName','companyCode','departmentCode','BusinessUnitCode','jobCode','role','active')
 # Interact with query parameters or the body of the request.
 $name = $Request.Query.Name
 if (-not $name) {
@@ -24,7 +24,7 @@ else {
     switch($Request.method){
         "GET"{
             if ($Request.params.path){
-                $body=$inputTable | where-object{$_.username -eq $Request.params.path} | Select-Object $schema
+                $body=@($inputTable) | where-object{$_.username -eq $Request.params.path} | Select-Object $schema
             }else{
                 #get all users (pagination)
                 $body=$inputTable | Select-Object $schema
@@ -32,10 +32,22 @@ else {
         }
         "POST"{
             #create user
-            Push-OutputBinding -Name outputTable -Value ({
-                $Request.body
+            $json=$Request.body | convertfrom-json
+            $id=new-guid
+            $newuser=[pscustomobject]@{
+                id               = $id.guid
+                userName         = $json.username
+                displayName      = $json.displayName
+                companyCode      = $json.companyCode
+                departmentCode   = $json.departmentCode
+                BusinessUnitCode = $json.BusinessUnitCode
+                jobCode          = $json.jobCode
+                active           = $json.active
+            }
+            $body=Push-OutputBinding -Name outputTable -Value ({
+                $newuser
             })
-            $body = 'TODO: create user code here'
+            
         }
         "PATCH"{
             #updte user
@@ -46,10 +58,10 @@ else {
         }
         "PUT"{
             #update user
-            Push-OutputBinding -Name outputTable -Value ({
+            $body=Push-OutputBinding -Name outputTable -Value ({
                 $Request.body
             })
-            $body = 'TODO: update user code here'
+            
         }
         "DELETE"{
             #remove user
