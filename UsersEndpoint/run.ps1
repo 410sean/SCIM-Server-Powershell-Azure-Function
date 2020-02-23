@@ -8,7 +8,7 @@ within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
-$schema="userName,displayName,companyCode,departmentCode,BusinessUnitCode,jobCode,role,active"
+$schema='userName','displayName','companyCode','departmentCode','BusinessUnitCode','jobCode','role','active'
 # Interact with query parameters or the body of the request.
 $name = $Request.Query.Name
 if (-not $name) {
