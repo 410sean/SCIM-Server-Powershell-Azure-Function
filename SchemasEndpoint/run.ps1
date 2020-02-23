@@ -79,7 +79,7 @@ $body='{
           "uniqueness": "none"
         },
         {
-          "name": "Business Unit Code",
+          "name": "BusinessUnitCode",
           "description": "the Business Unit code, product code, or division code of the user",
           "type": "string",
           "multiValued": false,
