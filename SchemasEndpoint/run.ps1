@@ -68,6 +68,17 @@ $body='{
           "uniqueness": "none"
         },
         {
+          "name": "EmployeeClass",
+          "description": "the Employee Class of the user",
+          "type": "string",
+          "multiValued": false,
+          "required": false,
+          "caseExact": false,
+          "mutability": "readWrite",
+          "returned": "default",
+          "uniqueness": "none"
+        },
+        {
           "name": "departmentCode",
           "description": "the Department Code of the user",
           "type": "string",
@@ -91,7 +102,29 @@ $body='{
         },
         {
           "name": "jobCode",
-          "description": "the job code o the user",
+          "description": "the job code of the user",
+          "type": "string",
+          "multiValued": false,
+          "required": false,
+          "caseExact": false,
+          "mutability": "readWrite",
+          "returned": "default",
+          "uniqueness": "none"
+        },
+        {
+          "name": "domainID",
+          "description": "the domain override of the user",
+          "type": "string",
+          "multiValued": false,
+          "required": false,
+          "caseExact": false,
+          "mutability": "readWrite",
+          "returned": "default",
+          "uniqueness": "none"
+        },
+        {
+          "name": "location",
+          "description": "the office ID of the user",
           "type": "string",
           "multiValued": false,
           "required": false,
