@@ -60,7 +60,7 @@ $body='{
       "location": "https://scimps.azurewebsites.net/api/ServiceProviderConfig"
     }
   }'
-# Associate values to output bindings by calling 'Push-OutputBinding'.
+# Associate values to output bindings by calling 'Push-OutputBinding'. test
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
     Body = $body
