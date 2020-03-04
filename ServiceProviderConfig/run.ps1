@@ -57,7 +57,7 @@ $body='{
     ],
     "meta": {
       "resourceType": "ServiceProviderConfig",
-      "location": "https://scimps.azurewebsites.net/api//ServiceProviderConfig"
+      "location": "https://scimps.azurewebsites.net/api/ServiceProviderConfig"
     }
   }'
 # Associate values to output bindings by calling 'Push-OutputBinding'.
