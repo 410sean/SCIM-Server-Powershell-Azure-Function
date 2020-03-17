@@ -31,7 +31,7 @@ $body='{
     ]
   }'
   if ($Request.params.path){
-
+    $psbody=create-scimItem -schema 'ResourceType' -properties $resourceType.where{$_.name -eq $Request.params.path} -location 'https://scimps.azurewebsites.net/api' -includeMeta
   }else{
   $psbody=[pscustomobject]@{
     totalResults=0
@@ -39,35 +39,16 @@ $body='{
     startIndex=1
     schemas=@("urn:ietf:params:scim:schemas:core:2.0:ListResponse")
   }
-}
-function create-scimItem ($schema, $properties, $location){
-  #will create item starting with schema and ending with meta
-  $psitem=[pscustomobject]@{
-    schemas=@("urn:ietf:params:scim:schemas:core:2.0:$schema")
+  $resources=@()
+  foreach ($res in $resources){
+    $resources+=create-scimItem -schema 'ResourceType' -properties $res -location "https://scimps.azurewebsites.net/api/ResourceType$($res.endpoint)" -includeMeta
   }
-  foreach ($prop in $properties.getenumerator()){
-    if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
-    if ($prop.name -like "*_*"){
-        $tree="$($prop.name)".split('_')
-        if ($null -ne ($psbody."$($tree[0])")){
-            $psitem."$($tree[0])" | add-member -notepropertyname "$($tree[1])" -notepropertyvalue ($prop.value) -verbose
-        }else{
-            $psitem | add-member -notepropertyname "$($tree[0])" -notepropertyvalue ([pscustomobject]@{"$($tree[1])"=$prop.value}) -verbose
-        }
-    }else{
-        $psitem | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
-    }
-  }
-  $meta=[pscustomobject]@{
-    resourceType=$schema
-    location="$location/$schema"
-  }
-  $psitem | add-member -notepropertyname 'meta' -notepropertyvalue $meta
-  return $psitem
+  $psbody.totalResults=$resources
+  $psbody | Add-Member -NotePropertyName 'Resources' -NotePropertyValue $resources
 }
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
-    Body = $body
+    Body = $psbody
 })

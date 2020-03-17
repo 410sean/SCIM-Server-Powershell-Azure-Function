@@ -41,7 +41,7 @@ function create-scimItem ($schema, $properties, $location, [switch]$includeMeta)
     if ($includemeta){
         $meta=[pscustomobject]@{
             resourceType=$schema
-            location="$location/$schema"
+            location="$location"
         }
         $psitem | add-member -notepropertyname 'meta' -notepropertyvalue $meta
     }

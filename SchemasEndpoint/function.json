@@ -27,6 +27,22 @@
       "tableName": "schemaAttributes",
       "connection": "AzureWebJobsStorage",
       "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "Schemas",
+      "tableName": "Schemas",
+      "partitionKey": "ResourceType",
+      "take": 50,
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "schemaAttributes",
+      "tableName": "schemaAttributes",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
     }
   ]
 }
