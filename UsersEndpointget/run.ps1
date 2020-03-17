@@ -37,10 +37,7 @@ if ($Request.params.path.length -eq 36){
     }
     if ($resources){$body.resources=@($resources)}
     $body.totalResults=$resources.count
-        
-        
-    
-    
+    $body.itemsPerPage=$resources.count
 }else{
     #TODO filter command
     $body=[pscustomobject]@{
@@ -51,8 +48,8 @@ if ($Request.params.path.length -eq 36){
         resources=@()
     }    
 }   
-       
-    
+    $body.totalResults=$resources.count
+    $body.itemsPerPage=$resources.count
     
     
     
