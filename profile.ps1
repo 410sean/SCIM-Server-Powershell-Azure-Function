@@ -29,7 +29,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
       if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
       if ($prop.name -like "*_*"){
           $tree="$($prop.name)".split('_')
-          if ($null -ne ($psbody."$($tree[0])")){
+          if (($psbody."$($tree[0])") -ne $null){
               $psitem."$($tree[0])" | add-member -notepropertyname "$($tree[1])" -notepropertyvalue ($prop.value) -verbose
           }else{
               $psitem | add-member -notepropertyname "$($tree[0])" -notepropertyvalue ([pscustomobject]@{"$($tree[1])"=$prop.value}) -verbose
