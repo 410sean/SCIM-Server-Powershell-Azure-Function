@@ -11,9 +11,6 @@ Write-Host "PowerShell HTTP trigger function processed a request."
 
 
 if ($Request.params.path.length -eq 36){
-    $body=[pscustomobject]@{
-        schemas= @("urn:ietf:params:scim:api:messages:2.0:User")
-    }    
     $userobj=$user.($Request.params.path)
     if ($null -eq $userobj){
         $body=[pscustomobj]@{
@@ -39,6 +36,7 @@ if ($Request.params.path.length -eq 36){
         $resources+=$userobj
     }
     if ($resources){$body.resources=@($resources)}
+    $body.totalResults=$resources.count
         
         
     
