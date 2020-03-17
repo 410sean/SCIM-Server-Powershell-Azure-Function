@@ -8,8 +8,22 @@ within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
-
-
+function new-scimuser ($prop){
+    $userobj=[pscustomobject]@{
+        schemas=@('urn:ietf:params:scim:schemas:core:2.0:User')
+        id=$prop.RowKey
+    }
+    foreach ($attr in $schemaAttributes.name.where{$_ -notin ('schemas','id')}){
+        if ($prop.$attr){$userobj | add-member -notepropertyname $attr -notepropertyvalue $prop.$attr}
+    }
+    $meta=[pscustomobject]@{
+        resourceType='User'
+        location="https://scimps.azurewebsites.net/api/Users/$($prop.RowKey)"
+    }
+    $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
+    return $userobj
+}
+$resources=@()
 if ($Request.params.path.length -eq 36){
     $userobj=$user.($Request.params.path)
     if ($null -eq $userobj){
@@ -19,7 +33,7 @@ if ($Request.params.path.length -eq 36){
             status=404
         }
     }else{
-        $body=new-scimitem -schema 'User' -properties $userobj -location "https://scimps.azurewebsites.net/api/users/$($userobj.id)" -includeMeta
+        $body=new-scimuser -prop $userobj
     }
 }elseif($Request.params.path.length -eq 0){
     #get all users (pagination)
@@ -30,9 +44,8 @@ if ($Request.params.path.length -eq 36){
         schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
         resources=@()
     }    
-    $allusers=Get-Content $User -Raw | ConvertFrom-Json
-    foreach ($singleuser in $allusers.getenumeration()){
-        $userobj=new-scimitem -schema 'User' -properties $singleuser -location "https://scimps.azurewebsites.net/api/users/$($userobj.id)" -includeMeta
+    foreach ($singleuser in $user){
+        $userobj=new-scimuser -prop $singleuser
         $resources+=$userobj
     }
     if ($resources){$body.resources=@($resources)}
