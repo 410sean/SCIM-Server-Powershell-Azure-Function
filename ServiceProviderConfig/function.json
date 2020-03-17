@@ -13,6 +13,20 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
+    },
+    {
+      "type": "table",
+      "name": "ServiceProviderConfig",
+      "tableName": "ServiceProviderConfig",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "authenticationSchemes",
+      "tableName": "authenticationSchemes",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
     }
   ]
 }

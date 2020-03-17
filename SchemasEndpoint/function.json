@@ -13,6 +13,20 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
+    },
+    {
+      "type": "table",
+      "name": "Schemas",
+      "tableName": "Schemas",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "schemaAttributes",
+      "tableName": "schemaAttributes",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
     }
   ]
 }

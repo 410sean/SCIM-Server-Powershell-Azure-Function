@@ -13,6 +13,13 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
+    },
+    {
+      "type": "table",
+      "name": "resourceType",
+      "tableName": "resourceType",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
     }
   ]
 }
