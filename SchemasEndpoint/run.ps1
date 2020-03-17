@@ -5,8 +5,21 @@ param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
-
-
+function new-scimSchemaAttribute ($prop){
+  $attributeTemplate=[pscustomobject]@{
+    name=[string]$prop.name
+    type=$prop.type
+  }
+  if ($prop.multiValued){$attributeTemplate.multiValued=[boolean]$prop.multiValued}
+  if ($prop.description){$attributeTemplate.description=[string]$prop.description}
+  if ($prop.required){$attributeTemplate.required=[boolean]$prop.required}
+  if ($prop.caseExact){$attributeTemplate.caseExact=[boolean]$prop.caseExact}
+  if ($prop.mutability){$attributeTemplate.mutability=$prop.mutability}
+  if ($prop.returned){$attributeTemplate.returned=$prop.returned}
+  if ($prop.uniqueness){$attributeTemplate.uniqueness=$prop.uniqueness}
+  if ($prop.referencetypes){$attributeTemplate.referenceTypes=$prop.referecetypes}
+  return $attributeTemplate  
+}
 $status = [HttpStatusCode]::OK
 
 if ($Request.params.path){
@@ -23,12 +36,7 @@ if ($Request.params.path){
     }
   }
   foreach ($attr in $targetattributes | sort-object rowkey){
-    $single=[pscustomobject]@{}
-    foreach ($prop in $attr.getenumerator()){
-      if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
-      $single | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
-    }
-    $psbody.attributes+=$single
+    $psbody.attributes+=new-scimSchemaAttribute $attr
   }
 }else{
   $psbody=[pscustomobject]@{
@@ -51,13 +59,8 @@ if ($Request.params.path){
         location="https://scimps.azurewebsites.net/api/Schemas/urn:ietf:params:scim:schemas:core:2.0:$($targetschema.name)"
       }
     }
-    foreach ($attr in $targetattributes | sort-object rowkey){
-      $single=[pscustomobject]@{}
-      foreach ($prop in $attr.getenumerator()){
-        if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
-        $single | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
-      }
-      $schemabody.attributes+=$single
+    foreach ($attr in $targetattributes){
+      $schemabody.attributes+=new-scimSchemaAttribute $attr
     }
     $psbody.Resources+=$schemabody
   }
