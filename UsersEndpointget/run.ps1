@@ -27,7 +27,7 @@ $resources=@()
 if ($Request.params.path.length -eq 36){
     $userobj=$user.where{$_.RowKey -eq $Request.params.path}[0]
     if ($null -eq $userobj){
-        $body=[pscustomobj]@{
+        $body=[pscustomobject]@{
             schemas=@("urn:ietf:params:scim:api:messages:2.0:Error")
             detail="User not found"
             status=404
