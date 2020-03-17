@@ -68,5 +68,5 @@ if ($Request.params.path){
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
-    Body = $schema
+    Body = $psbody
 })
