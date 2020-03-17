@@ -18,13 +18,18 @@
       "type": "table",
       "name": "ServiceProviderConfig",
       "tableName": "ServiceProviderConfig",
+      "take": 1,
       "connection": "AzureWebJobsStorage",
-      "direction": "in"
+      "direction": "in",
+      "rowKey": "0",
+      "partitionKey": "ServiceProviderConfig"
     },
     {
       "type": "table",
       "name": "authenticationSchemes",
       "tableName": "authenticationSchemes",
+      "partitionKey": "authenticationSchemes",
+      "take": 50,
       "connection": "AzureWebJobsStorage",
       "direction": "in"
     }

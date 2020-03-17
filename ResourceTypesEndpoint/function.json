@@ -18,6 +18,8 @@
       "type": "table",
       "name": "resourceType",
       "tableName": "resourceType",
+      "partitionKey": "resourceType",
+      "take": 50,
       "connection": "AzureWebJobsStorage",
       "direction": "in"
     }

@@ -19,3 +19,31 @@ if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
 # Enable-AzureRmAlias
 
 # You can also define functions or aliases that can be referenced in any of your PowerShell functions.
+function create-scimItem ($schema, $properties, $location, [switch]$includeMeta){
+    #will create item starting with schema and ending with meta
+    #nested properties should have a property name that can be split by underscore '_'
+    $psitem=[pscustomobject]@{
+      schemas=@("urn:ietf:params:scim:schemas:core:2.0:$schema")
+    }
+    foreach ($prop in $properties.getenumerator()){
+      if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
+      if ($prop.name -like "*_*"){
+          $tree="$($prop.name)".split('_')
+          if ($null -ne ($psbody."$($tree[0])")){
+              $psitem."$($tree[0])" | add-member -notepropertyname "$($tree[1])" -notepropertyvalue ($prop.value) -verbose
+          }else{
+              $psitem | add-member -notepropertyname "$($tree[0])" -notepropertyvalue ([pscustomobject]@{"$($tree[1])"=$prop.value}) -verbose
+          }
+      }else{
+          $psitem | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
+      }
+    }
+    if ($includemeta){
+        $meta=[pscustomobject]@{
+            resourceType=$schema
+            location="$location/$schema"
+        }
+        $psitem | add-member -notepropertyname 'meta' -notepropertyvalue $meta
+    }
+    return $psitem
+  }
