@@ -10,30 +10,53 @@ for removing resources#>
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 
-if ($Request.params.path){
-    $user=@(Get-Content $User -Raw | ConvertFrom-Json) | where-object{$_.id -eq $Request.params.path} | Select-Object $schema
+if ($Request.params.path.length -eq 36){
+    $body=[pscustomobject]@{
+        schemas= @("urn:ietf:params:scim:api:messages:2.0:User")
+    }    
+    $userobj=$user.($Request.params.path)
+    if ($null -eq $userobj){
+        $body=[pscustomobj]@{
+            schemas=@("urn:ietf:params:scim:api:messages:2.0:Error")
+            detail="User not found"
+            status=404
+        }
+    }else{
+
+    }
     $user | Add-Member -NotePropertyName schemas -NotePropertyValue [pscustomobject]@("urn:ietf:params:scim:schemas:core:2.0:User")
         $user | Add-Member -NotePropertyName meta -NotePropertyValue ([PSCustomObject]@{
             resourceType = "User"
             location = "Users/$($user.id)"
         })
     $body=$user
-}else{
+}elseif($Request.params.path.length -eq 0){
     #get all users (pagination)
-    $resources=Get-Content $inputTable -Raw | ConvertFrom-Json
-    foreach ($user in $resources){
-        $user | Add-Member -NotePropertyName schemas -NotePropertyValue [pscustomobject]@("urn:ietf:params:scim:schemas:core:2.0:User")
-        $user | Add-Member -NotePropertyName meta -NotePropertyValue ([PSCustomObject]@{
-            resourceType = "User"
-            location = "Users/$($user.id)"
-        })
-    }
     $body=[pscustomobject]@{
-        resources = $resources
         startIndex= 1
         itemsPerPage= $resources.count
         totalResults= $resources.count
         schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
+        resources=@()
+    }    
+    $allusers=Get-Content $User -Raw | ConvertFrom-Json
+    foreach ($singleuser in $allusers.getenumeration()){
+        $userobj=new-scimitem -schema 'User' -properties $singleuser -location "https://scimps.azurewebsites.net/api/users/$($userobj.id)" -includeMeta
+        $resources+=$userobj
+    }
+    if ($resources){$body.resources=@($resources)}
+        
+        
+    
+    
+}else{
+    #TODO filter command
+    $body=[pscustomobject]@{
+        startIndex= 1
+        itemsPerPage= 0
+        totalResults= 0
+        schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
+        resources=@()
     }    
 }   
        
@@ -50,5 +73,5 @@ $status = [HttpStatusCode]::OK
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
-    Body = $body
+    Body = $body | convertto-json -depth 10
 })
