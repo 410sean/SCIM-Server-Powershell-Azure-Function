@@ -25,7 +25,7 @@ function new-scimuser ($prop){
 }
 $resources=@()
 if ($Request.params.path.length -eq 36){
-    $userobj=$user.($Request.params.path)
+    $userobj=$user.where{$_.RowKey -eq $Request.params.path}[0]
     if ($null -eq $userobj){
         $body=[pscustomobj]@{
             schemas=@("urn:ietf:params:scim:api:messages:2.0:Error")
