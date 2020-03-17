@@ -25,7 +25,7 @@ foreach ($prop in $ServiceProviderConfig.getenumerator()){
         #write-host "key=$($prop.name)"
         $psbody | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
     }   
-}
+}#>
 $psauthenticationSchemes=@()
 foreach ($auth in $authenticationSchemes.getenumerator()){
     $authscheme=[pscustomobject]@{}
@@ -35,7 +35,7 @@ foreach ($auth in $authenticationSchemes.getenumerator()){
         $authscheme | add-member -notepropertyname "$prop" -notepropertyvalue $auth.$prop -verbose
     }
     $psauthenticationSchemes+=$authscheme
-}#>
+}
 $meta=[pscustomobject]@{
     resourceType=$ServiceProviderConfig.PartitionKey
     location="https://scimps.azurewebsites.net/api/ServiceProviderConfig"
