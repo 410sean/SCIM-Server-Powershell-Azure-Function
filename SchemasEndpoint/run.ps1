@@ -10,14 +10,14 @@ function new-scimSchemaAttribute ($prop){
     name=[string]$prop.name
     type=$prop.type
   }
-  if ($prop.multiValued){$attributeTemplate.multiValued=[boolean]$prop.multiValued}
-  if ($prop.description){$attributeTemplate.description=[string]$prop.description}
-  if ($prop.required){$attributeTemplate.required=[boolean]$prop.required}
-  if ($prop.caseExact){$attributeTemplate.caseExact=[boolean]$prop.caseExact}
-  if ($prop.mutability){$attributeTemplate.mutability=$prop.mutability}
-  if ($prop.returned){$attributeTemplate.returned=$prop.returned}
-  if ($prop.uniqueness){$attributeTemplate.uniqueness=$prop.uniqueness}
-  if ($prop.referencetypes){$attributeTemplate.referenceTypes=$prop.referecetypes}
+  if ($prop.multiValued){$attributeTemplate | add-member -notepropertyname multiValued -NotePropertyValue $prop.multiValued}
+  if ($prop.description){$attributeTemplate| add-member -notepropertyname description -NotePropertyValue $prop.description}
+  if ($prop.required){$attributeTemplate | add-member -notepropertyname required -NotePropertyValue $prop.required}
+  if ($prop.caseExact){$attributeTemplate | add-member -notepropertyname caseExact -NotePropertyValue $prop.caseExact}
+  if ($prop.mutability){$attributeTemplate | add-member -notepropertyname mutability -NotePropertyValue $prop.mutability}
+  if ($prop.returned){$attributeTemplate | add-member -notepropertyname returned -NotePropertyValue $prop.returned}
+  if ($prop.uniqueness){$attributeTemplate | add-member -notepropertyname uniqueness -NotePropertyValue $prop.uniqueness}
+  if ($prop.referencetypes){$attributeTemplate | add-member -notepropertyname referenceTypes -NotePropertyValue $prop.referecetypes}
   return $attributeTemplate  
 }
 $status = [HttpStatusCode]::OK
@@ -59,17 +59,19 @@ if ($Request.params.path){
         location="https://scimps.azurewebsites.net/api/Schemas/urn:ietf:params:scim:schemas:core:2.0:$($targetschema.name)"
       }
     }
+    $attributes=@()
     foreach ($attr in $targetattributes){
-      $schemabody.attributes+=new-scimSchemaAttribute $attr
+      $attributes+=new-scimSchemaAttribute $attr
     }
-    $psbody.Resources+=$schemabody
+    $schemabody.attributes=@($attributes)
+    $resources+=$schemabody
   }
   $psbody.totalResults=$resources.count
-  $psbody | Add-Member -NotePropertyName 'Resources' -NotePropertyValue $resources
+  $psbody.resources=@($resources)
 }
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
-    Body = $psbody
+    Body = $psbody | convertto-json -depth 10
 })
