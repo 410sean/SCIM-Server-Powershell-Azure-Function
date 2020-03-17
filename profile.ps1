@@ -19,7 +19,7 @@ if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
 # Enable-AzureRmAlias
 
 # You can also define functions or aliases that can be referenced in any of your PowerShell functions.
-function create-scimItem ($schema, $properties, $location, [switch]$includeMeta){
+function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
     #will create item starting with schema and ending with meta
     #nested properties should have a property name that can be split by underscore '_'
     $psitem=[pscustomobject]@{

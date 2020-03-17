@@ -6,7 +6,7 @@ param($Request, $TriggerMetadata, $ServiceProviderConfig, $authenticationSchemes
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 $status = [HttpStatusCode]::OK
-  
+<#  
 $psbody=[pscustomobject]@{
     schemas=@("urn:ietf:params:scim:schemas:core:2.0:$($ServiceProviderConfig.PartitionKey)")
 }
@@ -35,12 +35,12 @@ foreach ($auth in $authenticationSchemes.getenumerator()){
         $authscheme | add-member -notepropertyname "$prop" -notepropertyvalue $auth.$prop -verbose
     }
     $psauthenticationSchemes+=$authscheme
-}
+}#>
 $meta=[pscustomobject]@{
     resourceType=$ServiceProviderConfig.PartitionKey
     location="https://scimps.azurewebsites.net/api/ServiceProviderConfig"
 }
-$psbody=create-scimItem -schema 'ServiceProviderConfig' -properties $ServiceProviderConfig
+$psbody=new-scimItem -schema 'ServiceProviderConfig' -properties $ServiceProviderConfig
 $psbody | add-member -notepropertyname 'authenticationSchemes' -notepropertyvalue $psauthenticationSchemes
 $psbody | add-member -notepropertyname 'meta' -notepropertyvalue $meta
 
