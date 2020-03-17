@@ -22,14 +22,8 @@ if ($Request.params.path.length -eq 36){
             status=404
         }
     }else{
-
+        $body=new-scimitem -schema 'User' -properties $userobj -location "https://scimps.azurewebsites.net/api/users/$($userobj.id)" -includeMeta
     }
-    $user | Add-Member -NotePropertyName schemas -NotePropertyValue [pscustomobject]@("urn:ietf:params:scim:schemas:core:2.0:User")
-        $user | Add-Member -NotePropertyName meta -NotePropertyValue ([PSCustomObject]@{
-            resourceType = "User"
-            location = "Users/$($user.id)"
-        })
-    $body=$user
 }elseif($Request.params.path.length -eq 0){
     #get all users (pagination)
     $body=[pscustomobject]@{
