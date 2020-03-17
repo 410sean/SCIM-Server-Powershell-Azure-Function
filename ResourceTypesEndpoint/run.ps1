@@ -21,7 +21,7 @@ $status = [HttpStatusCode]::OK
   foreach ($res in $resourceType){
     $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://scimps.azurewebsites.net/api/ResourceType$($res.endpoint)" -includeMeta
   }
-  $psbody.totalResults=$resources
+  $psbody.totalResults=$resources.count
   $psbody.resources=$resources
 }
 
