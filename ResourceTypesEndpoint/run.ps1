@@ -9,7 +9,7 @@ Write-Host "PowerShell HTTP trigger function processed a request."
 $status = [HttpStatusCode]::OK
   if ($Request.params.path){
     $targetresource=($ResourceType.where{$_.name -eq $Request.params.path})[0]
-    $psbody=new-scimItem -schema 'ResourceType' -properties $targetresource -location "https://scimps.azurewebsites.net/api/ResourceType$($targetresource.endpoint)" -includeMeta
+    $psbody=new-scimItem -schema 'ResourceType' -properties $targetresource -location "https://scimps.azurewebsites.net/api/ResourceType/$($targetresource.name)" -includeMeta
   }else{
   $psbody=[pscustomobject]@{
     totalResults=0
@@ -20,7 +20,7 @@ $status = [HttpStatusCode]::OK
   }
   $resources=@()
   foreach ($res in $ResourceType){
-    $resources=new-scimItem -schema 'ResourceType' -properties $res -location "https://scimps.azurewebsites.net/api/ResourceType$($res.endpoint)" -includeMeta
+    $resources=new-scimItem -schema 'ResourceType' -properties $res -location "https://scimps.azurewebsites.net/api/ResourceType/$($res.name)" -includeMeta
   }
   $psbody.totalResults=$resources.count
   $psbody.resources=@($resources)
