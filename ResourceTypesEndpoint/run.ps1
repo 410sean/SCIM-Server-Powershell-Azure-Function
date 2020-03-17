@@ -1,14 +1,14 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $resourceType)
+param($Request, $TriggerMetadata, $ResourceType)
 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 $status = [HttpStatusCode]::OK
   if ($Request.params.path){
-    $psbody=new-scimItem -schema 'ResourceType' -properties $resourceType.where{$_.name -eq $Request.params.path} -location 'https://scimps.azurewebsites.net/api/ResourceType' -includeMeta
+    $psbody=new-scimItem -schema 'ResourceType' -properties $ResourceType.where{$_.name -eq $Request.params.path} -location 'https://scimps.azurewebsites.net/api/ResourceType' -includeMeta
   }else{
   $psbody=[pscustomobject]@{
     totalResults=0
@@ -18,7 +18,7 @@ $status = [HttpStatusCode]::OK
     Resources=@()
   }
   $resources=@()
-  foreach ($res in $resourceType){
+  foreach ($res in $ResourceType){
     $resources=new-scimItem -schema 'ResourceType' -properties $res -location "https://scimps.azurewebsites.net/api/ResourceType$($res.endpoint)" -includeMeta
   }
   $psbody.totalResults=$resources.count
