@@ -15,13 +15,14 @@ $status = [HttpStatusCode]::OK
     itemsPerPage=100
     startIndex=1
     schemas=@("urn:ietf:params:scim:schemas:core:2.0:ListResponse")
+    Resources=@()
   }
   $resources=@()
-  foreach ($res in $resources){
+  foreach ($res in $resourceType){
     $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://scimps.azurewebsites.net/api/ResourceType$($res.endpoint)" -includeMeta
   }
   $psbody.totalResults=$resources
-  $psbody | Add-Member -NotePropertyName 'Resources' -NotePropertyValue $resources
+  $psbody.resources=$resources
 }
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
