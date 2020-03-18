@@ -42,7 +42,7 @@ if ($Request.params.path.length -eq 36){
         itemsPerPage= $resources.count
         totalResults= $resources.count
         schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
-        resources=@()
+        Resources=@()
     }    
     foreach ($singleuser in $user){
         $userobj=new-scimuser -prop $singleuser
