@@ -1,14 +1,28 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $inputTable)
+param($Request, $TriggerMetadata, $schemaAttributes, $User)
 <#GET for retrieval of resources; POST for creation,
 searching, and bulk modification; PUT for attribute replacement
 within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
-$schema=@('id','userName','displayName','companyCode','departmentCode','BusinessUnitCode','jobCode','location','domainID','EmployeeClass','PLMS','role','active')
+function new-scimuser ($prop){
+    $userobj=[pscustomobject]@{
+        schemas=@('urn:ietf:params:scim:schemas:core:2.0:User')
+        id=$prop.RowKey
+    }
+    foreach ($attr in $schemaAttributes.name.where{$_ -notin ('schemas','id')}){
+        if ($prop.$attr){$userobj | add-member -notepropertyname $attr -notepropertyvalue $prop.$attr}
+    }
+    $meta=[pscustomobject]@{
+        resourceType='User'
+        location="https://scimps.azurewebsites.net/api/Users/$($prop.RowKey)"
+    }
+    $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
+    return $userobj
+}
 # Interact with query parameters or the body of the request.
 $name = $Request.Query.Name
 if (-not $name) {

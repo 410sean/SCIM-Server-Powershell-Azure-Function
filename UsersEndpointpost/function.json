@@ -20,15 +20,22 @@
     },
     {
       "type": "table",
-      "name": "inputTable",
-      "tableName": "scimUsers",
+      "name": "schemaAttributes",
+      "tableName": "schemaAttributes",
       "connection": "AzureWebJobsStorage",
       "direction": "in"
     },
     {
       "type": "table",
-      "name": "outputTable",
-      "tableName": "scimUsers",
+      "name": "User",
+      "tableName": "User",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "createUser",
+      "tableName": "User",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
