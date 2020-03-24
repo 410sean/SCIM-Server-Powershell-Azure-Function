@@ -2,7 +2,7 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
-Write-Verbose $request -verbose
+Write-Verbose ($request | out-string) -verbose
 write-host $request 
 $status = [HttpStatusCode]::OK
 $guid=(new-guid).guid
@@ -11,7 +11,7 @@ $myvalue=[pscustomobject]@{
     RowKey=$guid
 }
 foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
-    $myvalue | add-member -notepropertyname $attr -notepropertyvalue $Request.Body.$attr
+    if ($Request.Body.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $Request.Body.$attr}
 }
 Push-OutputBinding -Name createUser -Value $myValue
 #$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
