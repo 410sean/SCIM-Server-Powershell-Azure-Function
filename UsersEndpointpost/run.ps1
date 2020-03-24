@@ -2,7 +2,7 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
-Write-Verbose $request
+Write-Verbose $request -verbose
 write-host $request 
 $status = [HttpStatusCode]::OK
 $guid=(new-guid).guid
@@ -20,7 +20,7 @@ Push-OutputBinding -Name createUser -Value $myValue
 #}else{
     $body=$myvalue
 #}
-write-verbose $body
+write-verbose $body -Verbose
 $status = [HttpStatusCode]::OK
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
