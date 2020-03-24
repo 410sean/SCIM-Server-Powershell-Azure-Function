@@ -2,6 +2,8 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
+Write-Verbose $request
+write-host $request 
 $status = [HttpStatusCode]::OK
 $guid=(new-guid).guid
 $myvalue=[pscustomobject]@{
