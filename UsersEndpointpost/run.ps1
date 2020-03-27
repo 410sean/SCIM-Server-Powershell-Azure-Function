@@ -11,6 +11,8 @@ $myvalue=[pscustomobject]@{
     RowKey=$guid
 }
 write-host "parsing $($Request.Body | convertto-json -depth 10)"
+write-host "parsing $($Request.Body.displayName | convertto-json -depth 10)"
+write-host "parsing $($Request.Body.displayName)"
 foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
     write-host "checking for $attr=$($Request.Body.$attr)"
     if ($Request.Body.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $Request.Body.$attr}
