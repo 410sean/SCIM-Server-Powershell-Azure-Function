@@ -33,6 +33,13 @@
       "tableName": "User",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
+    },
+    {
+      "type": "table",
+      "name": "getUser",
+      "tableName": "schemaAttributes",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
     }
   ]
 }

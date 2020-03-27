@@ -1,7 +1,7 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
+param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $getUser)
 Write-Verbose ($request | convertto-json -depth 10) -verbose
 write-host ($request | convertto-json -depth 10) 
 function new-scimuser ($prop){
@@ -20,12 +20,13 @@ function new-scimuser ($prop){
     return $userobj
 }
 $status = [HttpStatusCode]::OK
-$guid=(new-guid).guid
+$userjson=$Request.Body | convertfrom-json
+$guid=$userjson.id
 $myvalue=[pscustomobject]@{
     PartitionKey='User'
     RowKey=$guid
 }
-$userjson=$Request.Body | convertfrom-json
+
 write-host "parsing $($Request.Body | convertto-json -depth 10)"
 write-host "parsing $($Request.Body))"
 write-host "parsing $($userjson.displayname)"
