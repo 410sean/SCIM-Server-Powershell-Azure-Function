@@ -10,7 +10,9 @@ $myvalue=[pscustomobject]@{
     PartitionKey='User'
     RowKey=$guid
 }
+write-host "parsing $($request.body.displayName)"
 foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
+    write-host "checking for $attr=$($Request.Body.$attr)"
     if ($Request.Body.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $Request.Body.$attr}
 }
 Push-OutputBinding -Name createUser -Value $myValue
