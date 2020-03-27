@@ -5,13 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "Request",
-      "methods": [
-        "get",
-        "post",
-        "put",
-        "patch",
-        "delete"
-      ]
+      "methods": ["put"]
     },
     {
       "type": "http",
@@ -20,15 +14,23 @@
     },
     {
       "type": "table",
-      "name": "inputTable",
-      "tableName": "scimUsers",
+      "name": "Schemas",
+      "tableName": "Schemas",
+      "take": 50,
       "connection": "AzureWebJobsStorage",
       "direction": "in"
     },
     {
       "type": "table",
-      "name": "outputTable",
-      "tableName": "scimUsers",
+      "name": "schemaAttributes",
+      "tableName": "schemaAttributes",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "name": "createUser",
+      "tableName": "User",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
