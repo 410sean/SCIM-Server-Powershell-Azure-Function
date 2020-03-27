@@ -20,22 +20,25 @@ function new-scimuser ($prop){
     return $userobj
 }
 $status = [HttpStatusCode]::OK
-$userjson=$Request.Body | convertfrom-json
-$guid=$userjson.id
-$myvalue=[pscustomobject]@{
-    PartitionKey='User'
-    RowKey=$guid
-}
+if ($Request.body -ne $null){
+    $userjson=$Request.Body | convertfrom-json
+    $guid=$userjson.id
+    $myvalue=[pscustomobject]@{
+        PartitionKey='User'
+        RowKey=$guid
+    }
 
-write-host "parsing $($Request.Body | convertto-json -depth 10)"
-write-host "parsing $($Request.Body))"
-write-host "parsing $($userjson.displayname)"
-foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
-    write-host "checking for $attr=$($userjson.$attr)"
-    if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
+    write-host "parsing $($Request.Body | convertto-json -depth 10)"
+    write-host "parsing $($Request.Body))"
+    write-host "parsing $($userjson.displayname)"
+    foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
+        write-host "checking for $attr=$($userjson.$attr)"
+        if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
+    }
+
+    Push-OutputBinding -Name createUser -Value $myValue 
 }
-Push-OutputBinding -Name createUser -Value $myValue 
-#$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
+    #$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
 #if ($result.schemas[0] -eq 'urn:ietf:params:scim:schemas:core:2.0:User'){
 #    $body=$result
 #}else{
