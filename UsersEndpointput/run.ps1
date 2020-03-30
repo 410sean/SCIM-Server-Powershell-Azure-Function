@@ -39,7 +39,9 @@ if ($Request.body -ne $null){
         $requestinputs=$attr.input.split(',')
         $requestbody=[pscustomobject]@{}
         foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
-        $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($requestbody |ConvertTo-Json)
+        write-host ($requestbody | convertto-json -depth 10) 
+        $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($requestbody | ConvertTo-Json -depth 10)
+        write-host ($attrResult | ConvertTo-Json -depth 10)
         $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
     }
     Push-OutputBinding -Name createUser -Value $myValue 
