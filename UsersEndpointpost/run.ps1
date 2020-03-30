@@ -1,7 +1,7 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
+param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $restAttributes)
 Write-Verbose ($request | convertto-json -depth 10) -verbose
 write-host ($request | convertto-json -depth 10) 
 function new-scimuser ($prop){
@@ -32,6 +32,13 @@ write-host "parsing $($userjson.displayName)"
 foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
     write-host "checking for $attr=$($userjson.$attr)"
     if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
+}
+foreach ($attr in $restAttributes){
+    $requestinputs=$attr.input.split(',')
+    $requestbody=[pscustomobject]@{}
+    foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
+    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($requestbody |ConvertTo-Json)
+    $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
 }
 Push-OutputBinding -Name createUser -Value $myValue
 #$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
