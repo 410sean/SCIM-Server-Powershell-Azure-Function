@@ -48,6 +48,7 @@ if ($Request.params.path.length -eq 36){
     }    
     $startindex=($Request.Query.startIndex)-1
     if ($startindex -lt 0){$startindex=0}
+    $body.startIndex=$startindex+1
     $endindex=$startindex+$Request.Query.count-1
     foreach ($singleuser in $user[$startindex..$endindex]){
         $userobj=new-scimuser -prop $singleuser
@@ -66,10 +67,15 @@ if ($Request.params.path.length -eq 36){
         resources=@()
     }    
 }   
-    $body.totalResults=$resources.count
+    
     $body.itemsPerPage=$resources.count
-       
+    
+    
+    
     $status = [HttpStatusCode]::OK
+
+
+
 
 $status = [HttpStatusCode]::OK
 write-host ($status | convertto-json -depth 10) 
