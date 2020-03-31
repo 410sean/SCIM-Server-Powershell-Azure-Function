@@ -25,7 +25,7 @@ $myvalue=[pscustomobject]@{
     PartitionKey='User'
     RowKey=$guid
 }
-$userjson=$Request.Body | convertfrom-json
+$userjson=$Request.Body
 #write-host "parsing $($Request.Body | convertto-json -depth 10)"
 #write-host "parsing $($Request.Body))"
 write-host "parsing $($userjson.displayName)"
@@ -34,12 +34,13 @@ foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
     if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
 }
 foreach ($attr in $restAttributes){
-    $requestinputs=$attr.input.split(',')
+    write-host $attr.input
+    write-host $attr.output    
     $requestbody=[pscustomobject]@{}
     foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
     write-host ($requestbody | convertto-json -depth 10) 
-    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($requestbody |ConvertTo-Json) -ContentType 'application/json'
-    $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
+    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($userjson |ConvertTo-Json) -ContentType 'application/json'
+    $myvalue | add-member -notepropertyname $attr.RowKey -notepropertyvalue $attrResult.($attr.RowKey)
 }
 write-host ($myValue | convertto-json -depth 10) 
 Push-OutputBinding -Name createUser -Value $myValue
