@@ -46,12 +46,15 @@ if ($Request.params.path.length -eq 36){
         schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
         Resources=@()
     }    
-    foreach ($singleuser in $user){
+    $startindex=($Request.Query.startIndex)-1
+    if ($startindex -lt 0){$startindex=0}
+    $endindex=$startindex+$Request.Query.count-1
+    foreach ($singleuser in $user[$startindex..$endindex]){
         $userobj=new-scimuser -prop $singleuser
         $resources+=$userobj
     }
     if ($resources){$body.resources=@($resources)}
-    $body.totalResults=$resources.count
+    $body.totalResults=$user.count
     $body.itemsPerPage=$resources.count
 }else{
     #TODO filter command
@@ -65,13 +68,8 @@ if ($Request.params.path.length -eq 36){
 }   
     $body.totalResults=$resources.count
     $body.itemsPerPage=$resources.count
-    
-    
-    
+       
     $status = [HttpStatusCode]::OK
-
-
-
 
 $status = [HttpStatusCode]::OK
 write-host ($status | convertto-json -depth 10) 
