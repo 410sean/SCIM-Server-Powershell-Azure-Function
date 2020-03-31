@@ -45,7 +45,7 @@ if ($Request.body -ne $null){
         $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
     }
     write-host ($myValue | convertto-json -depth 10) 
-    Push-OutputBinding -Name createUser -Value $myValue 
+    #Push-OutputBinding -Name createUser -Value $myValue 
 }
     #$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
 #if ($result.schemas[0] -eq 'urn:ietf:params:scim:schemas:core:2.0:User'){
