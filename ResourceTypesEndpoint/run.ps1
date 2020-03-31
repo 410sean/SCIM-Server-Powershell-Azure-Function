@@ -32,4 +32,5 @@ write-host ($psbody | convertto-json -depth 10)
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
     Body = $psbody
+    headers = @{"Content-Type"= "application/json"}
 })
