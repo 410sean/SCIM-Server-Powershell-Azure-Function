@@ -2,8 +2,8 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $getUser, $restAttributes)
-Write-Verbose ($request | convertto-json -depth 10) -verbose
 write-host ($request | convertto-json -depth 10) 
+write-host ($TriggerMetadata | convertto-json -depth 10) 
 function new-scimuser ($prop){
     $userobj=[pscustomobject]@{
         schemas=@('urn:ietf:params:scim:schemas:core:2.0:User')
@@ -54,6 +54,8 @@ if ($Request.body -ne $null){
 #}
 write-verbose $body -Verbose
 $status = [HttpStatusCode]::OK
+write-host ($status | convertto-json -depth 10) 
+write-host ($Body | convertto-json -depth 10) 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status

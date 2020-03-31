@@ -2,7 +2,8 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes)
-
+write-host ($request | convertto-json -depth 10) 
+write-host ($TriggerMetadata | convertto-json -depth 10) 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 function new-scimSchemaAttribute ($prop){
@@ -69,7 +70,8 @@ if ($Request.params.path){
   $psbody.totalResults=$resources.count
   $psbody.resources=@($resources)
 }
-
+write-host ($status | convertto-json -depth 10) 
+write-host ($psbody | convertto-json -depth 10) 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status

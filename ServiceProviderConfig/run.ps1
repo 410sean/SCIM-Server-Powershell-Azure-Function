@@ -2,7 +2,8 @@ using namespace System.Net
 
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata, $ServiceProviderConfig, $authenticationSchemes)
-
+write-host ($request | convertto-json -depth 10) 
+write-host ($TriggerMetadata | convertto-json -depth 10) 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 $status = [HttpStatusCode]::OK
@@ -43,7 +44,8 @@ $meta=[pscustomobject]@{
 $psbody=new-scimItem -schema 'ServiceProviderConfig' -properties $ServiceProviderConfig
 $psbody | add-member -notepropertyname 'authenticationSchemes' -notepropertyvalue $psauthenticationSchemes
 $psbody | add-member -notepropertyname 'meta' -notepropertyvalue $meta
-
+write-host ($status | convertto-json -depth 10) 
+write-host ($psbody | convertto-json -depth 10) 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
