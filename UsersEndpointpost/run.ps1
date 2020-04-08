@@ -12,8 +12,11 @@ function new-scimuser ($prop){
     foreach ($attr in $schemaAttributes.name.where{$_ -notin ('schemas','id')}){
         if ($prop.$attr){$userobj | add-member -notepropertyname $attr -notepropertyvalue $prop.$attr}
     }
+    $timestamp=(get-date).GetDateTimeFormats()[114].replace(' ','T')
     $meta=[pscustomobject]@{
         resourceType='User'
+        created = $timestamp
+        lastModified = $timestamp
         location="https://$($Request.Headers.'disguised-host')/api/Users/$($prop.RowKey)"
     }
     $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
@@ -59,5 +62,5 @@ write-host ($Body | convertto-json -depth 10)
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
     Body = $Body | convertto-json -depth 10
-    headers = @{"Content-Type"= "application/json"}
+    headers = @{"Content-Type"= "application/scim+json"}
 })
