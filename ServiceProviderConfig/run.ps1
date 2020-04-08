@@ -39,7 +39,7 @@ foreach ($auth in $authenticationSchemes.getenumerator()){
 }
 $meta=[pscustomobject]@{
     resourceType=$ServiceProviderConfig.PartitionKey
-    location="https://scimps.azurewebsites.net/api/ServiceProviderConfig"
+    location="https://$($Request.Headers.'disguised-host')/api/ServiceProviderConfig"
 }
 $psbody=new-scimItem -schema 'ServiceProviderConfig' -properties $ServiceProviderConfig
 $psbody | add-member -notepropertyname 'authenticationSchemes' -notepropertyvalue $psauthenticationSchemes

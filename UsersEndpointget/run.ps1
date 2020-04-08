@@ -20,7 +20,7 @@ function new-scimuser ($prop){
     }
     $meta=[pscustomobject]@{
         resourceType='User'
-        location="https://scimps.azurewebsites.net/api/Users/$($prop.RowKey)"
+        location="https://$($Request.Headers.'disguised-host')/api/Users/$($prop.RowKey)"
     }
     $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
     return $userobj

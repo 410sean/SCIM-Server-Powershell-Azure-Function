@@ -33,7 +33,7 @@ if ($Request.params.path){
     attributes=@()
     meta=[pscustomobject]@{
       resourceType='Schema'
-      location="https://scimps.azurewebsites.net/api/Schemas/urn:ietf:params:scim:schemas:core:2.0:$($targetschema.name)"
+      location="https://$($Request.Headers.'disguised-host')/api/Schemas/urn:ietf:params:scim:schemas:core:2.0:$($targetschema.name)"
     }
   }
   foreach ($attr in $targetattributes | sort-object rowkey){
@@ -57,7 +57,7 @@ if ($Request.params.path){
       attributes=@()
       meta=[pscustomobject]@{
         resourceType='Schema'
-        location="https://scimps.azurewebsites.net/api/Schemas/urn:ietf:params:scim:schemas:core:2.0:$($targetschema.name)"
+        location="https://$($Request.Headers.'disguised-host')/api/Schemas/urn:ietf:params:scim:schemas:core:2.0:$($targetschema.name)"
       }
     }
     $attributes=@()
