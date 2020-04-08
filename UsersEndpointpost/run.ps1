@@ -39,7 +39,8 @@ foreach ($attr in $restAttributes){
     $requestbody=[pscustomobject]@{}
     foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
     write-host ($requestbody | convertto-json -depth 10) 
-    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($userjson |ConvertTo-Json) -ContentType 'application/json'
+    write-host ($attr.url)
+    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($userjson) -ContentType 'application/json'
     $myvalue | add-member -notepropertyname $attr.RowKey -notepropertyvalue $attrResult.($attr.RowKey)
 }
 write-host ($myValue | convertto-json -depth 10) 
