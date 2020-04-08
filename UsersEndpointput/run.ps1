@@ -28,36 +28,36 @@ if ($null -eq $userobj){
     }
 }elseif ($userobj.count -eq 1){
     $userobj=$userobj[0]
-}else{
-    $userobj
-}
-if ($Request.body -ne $null){
-    $userjson=$Request.Body | convertfrom-json
-    $guid=$userjson.id
-    $myvalue=[pscustomobject]@{
-        PartitionKey='User'
-        RowKey=$guid
-    }
-
-    write-host "parsing $($Request.Body | convertto-json -depth 10)"
-    write-host "parsing $($Request.Body))"
-    write-host "parsing $($userjson.displayname)"
-    foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
-        write-host "checking for $attr=$($userjson.$attr)"
-        if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
-    }
-    foreach ($attr in $restAttributes){
-        $requestinputs=$attr.input.split(',')
-        $requestbody=[pscustomobject]@{}
-        foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
+    if ($Request.body -ne $null){
+        $userjson=$Request.Body | convertfrom-json
+        $guid=$userjson.id
+        $myvalue=[pscustomobject]@{
+            PartitionKey='User'
+            RowKey=$guid
+        }
+    
+        write-host "parsing $($Request.Body | convertto-json -depth 10)"
+        write-host "parsing $($Request.Body))"
+        write-host "parsing $($userjson.displayname)"
+        foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
+            write-host "checking for $attr=$($userjson.$attr)"
+            if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
+        }
+        foreach ($attr in $restAttributes){
+            $requestinputs=$attr.input.split(',')
+            $requestbody=[pscustomobject]@{}
+            foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
+            write-host ($myValue | convertto-json -depth 10) 
+            $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($myValue | ConvertTo-Json -depth 10) -ContentType 'application/json'
+            write-host ($attrResult | ConvertTo-Json -depth 10)
+            $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
+        }
         write-host ($myValue | convertto-json -depth 10) 
-        $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($myValue | ConvertTo-Json -depth 10) -ContentType 'application/json'
-        write-host ($attrResult | ConvertTo-Json -depth 10)
-        $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
+        #Push-OutputBinding -Name createUser -Value $myValue 
     }
-    write-host ($myValue | convertto-json -depth 10) 
-    #Push-OutputBinding -Name createUser -Value $myValue 
+}else{
 }
+
     #$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
 #if ($result.schemas[0] -eq 'urn:ietf:params:scim:schemas:core:2.0:User'){
 #    $body=$result

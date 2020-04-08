@@ -61,14 +61,14 @@ if ($Request.params.path.length -eq 36){
     #TODO filter command
     $body=[pscustomobject]@{
         startIndex= 1
-        itemsPerPage= 0
+        itemsPerPage= [int]$resources.count
         totalResults= 0
         schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
         resources=@()
     }    
 }   
-    
-    $body.itemsPerPage=$resources.count
+
+#$body.itemsPerPage=$resources.count
     
     
     
