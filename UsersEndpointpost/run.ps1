@@ -40,7 +40,7 @@ foreach ($attr in $restAttributes){
     foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
     write-host ($requestbody | convertto-json -depth 10) 
     write-host ($attr.url)
-    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($userjson) -ContentType 'application/json'
+    $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($userjson | convertto-json -depth 10) -ContentType 'application/json'
     $myvalue | add-member -notepropertyname $attr.RowKey -notepropertyvalue $attrResult.($attr.RowKey)
 }
 write-host ($myValue | convertto-json -depth 10) 
