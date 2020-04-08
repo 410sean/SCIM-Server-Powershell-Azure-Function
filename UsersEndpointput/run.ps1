@@ -19,7 +19,18 @@ function new-scimuser ($prop){
     $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
     return $userobj
 }
-$status = [HttpStatusCode]::OK
+$userobj=$getUser.where{$_.RowKey -eq $Request.params.path}
+if ($null -eq $userobj){
+    $body=[pscustomobject]@{
+        schemas=@("urn:ietf:params:scim:api:messages:2.0:Error")
+        detail="User not found"
+        status=404
+    }
+}elseif ($userobj.count -eq 1){
+    $userobj=$userobj[0]
+}else{
+    $userobj
+}
 if ($Request.body -ne $null){
     $userjson=$Request.Body | convertfrom-json
     $guid=$userjson.id
@@ -51,8 +62,9 @@ if ($Request.body -ne $null){
 #if ($result.schemas[0] -eq 'urn:ietf:params:scim:schemas:core:2.0:User'){
 #    $body=$result
 #}else{
+if ($null -eq $body){
     $body=new-scimuser $myvalue
-#}
+}
 write-verbose $body -Verbose
 $status = [HttpStatusCode]::OK
 write-host ($status | convertto-json -depth 10) 
