@@ -28,7 +28,12 @@ $myvalue=[pscustomobject]@{
     PartitionKey='User'
     RowKey=$guid
 }
-$userjson=$Request.Body
+if ($Request.Body.gettype().name -eq 'string'){
+    $userjson=$Request.Body | convertfrom-json -depth 100
+}else{
+    $userjson=$Request.Body
+}
+
 #write-host "parsing $($Request.Body | convertto-json -depth 10)"
 #write-host "parsing $($Request.Body))"
 write-host "parsing $($userjson.displayName)"
@@ -46,16 +51,29 @@ foreach ($attr in $restAttributes){
     $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($userjson | convertto-json -depth 10) -ContentType 'application/json'
     $myvalue | add-member -notepropertyname $attr.RowKey -notepropertyvalue $attrResult.($attr.RowKey)
 }
-write-host ($myValue | convertto-json -depth 10) 
-Push-OutputBinding -Name createUser -Value $myValue
-#$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
-#if ($result.schemas[0] -eq 'urn:ietf:params:scim:schemas:core:2.0:User'){
-#    $body=$result
-#}else{
+write-host ($myValue | convertto-json -depth 10)
+if ($status -eq [HttpStatusCode]::OK){ #required value check
+    foreach ($req in $schemaAttributes.where{$_.Required}){ 
+        if ($null -eq $myvalue.($req.name)){
+            $status = [HttpStatusCode]::BadRequest
+            $body={
+                schemas= @("urn:ietf:params:scim:api:messages:2.0:Error")
+                scimType="invalidValue"
+                detail="Attribute '$($req.name)' is Required"
+                status= "400"
+            }
+            break
+        }
+    }
+}
+if ($status -eq [HttpStatusCode]::OK){
+    Push-OutputBinding -Name createUser -Value $myValue
+    $status = [HttpStatusCode]::Created
     $body=new-scimuser $myvalue
-#}
+}
+
 write-verbose $body -Verbose
-$status = [HttpStatusCode]::Created
+
 write-host ($status | convertto-json -depth 10) 
 write-host ($Body | convertto-json -depth 10) 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
