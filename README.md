@@ -10,12 +10,15 @@ The list below doesn't necessarily denote priority or order.
 
 - [ ] Finish users endpoints
   - [x] Create (post)
+    - [X] check required
+    - [ ] check uniqueness
+    - [x] add rest attributes
   - [X] Read (get)
     - [X] read all  
     - [X] read one  
     - [ ] search 
   - [ ] Replace (put)  
-  - [ ] Update (Patch) (in progress - cleanup code)
+  - [ ] Update (Patch)
     - [ ] Add  
     - [ ] Replace  
     - [ ] Remove  
@@ -25,5 +28,5 @@ The list below doesn't necessarily denote priority or order.
   - [x] /ServiceProviderConfig
   - [x] /Schemas
   - [x] /ResourceTypes
-- [ ] Add support for mutability rule-processing.
-- [ ] Add support for bulk processing
+- [ ] Add support for Rest attributes
+  - [ ] parse input/output schema
