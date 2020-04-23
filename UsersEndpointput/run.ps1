@@ -12,60 +12,71 @@ function new-scimuser ($prop){
     foreach ($attr in $schemaAttributes.name.where{$_ -notin ('schemas','id')}){
         if ($prop.$attr){$userobj | add-member -notepropertyname $attr -notepropertyvalue $prop.$attr}
     }
+    $timestampnow=(get-date).GetDateTimeFormats()[114].replace(' ','T')
+    if ($prop.tabletimestamp){
+        $timestamp=($prop.TableTimestamp).GetDateTimeFormats()[114].replace(' ','T')
+    }else{
+        $timestamp=$timestampnow
+    }
     $meta=[pscustomobject]@{
         resourceType='User'
+        created = $timestamp
+        lastModified = $timestampnow
         location="https://$($Request.Headers.'disguised-host')/api/Users/$($prop.RowKey)"
     }
     $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
     return $userobj
 }
-$userobj=$getUser.where{$_.RowKey -eq $Request.params.path}
-if ($null -eq $userobj){
+if ($null -eq (Get-AzContext)){Connect-AzAccount -Identity}
+$userid=$Request.Params.path
+if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
+    $userjson=$Request.Body | convertfrom-json -depth 100
+}else{
+    $userjson=$Request.Body
+}
+if (-not $userid){
+    $userid=$Request.Body.id
+}
+$storage=Get-AzStorageAccount -Name $tableconnection.accountname -ResourceGroupName $tableconnection.accountname
+$table=Get-AzStorageTable -Context $storage.Context -Name 'User'
+$tableuser=Get-AzTableRow -RowKey $userid -PartitionKey 'User' -Table $table.cloudtable
+if ($tableuser){
+    $schematable=Get-AzStorageTable -Context $storage.Context -Name 'SchemaAttributes'
+    $schemaAttributes=Get-AzTableRow -Table $schematable.CloudTable
+    $update=$false
+    $myvalue=@{
+        PartitionKey=$tableuser.PartitionKey
+        RowKey=$tableuser.RowKey
+    }
+    foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq $myvalue.PartitionKey -and $_.mutability -eq 'readWrite'}.name){
+        if ($userjson.$attr -and $tableuser.$attr -ne $userjson.$attr){$myvalue.$attr=$userjson.$attr;$update=$true; $attr}
+    }
+    if ($update){
+        $restattributetable=Get-AzStorageTable -Context $storage.Context -Name 'restattributes'
+        $restattributes=Get-AzTableRow -Table $restattributetable.CloudTable
+        foreach ($attr in $restattributes){
+            $restrequestbody=$attr.input | convertfrom-json
+            foreach ($prop in ($restrequestbody.properties | gm).where{$_.MemberType -eq 'NoteProperty'}.name){
+                $restrequestbody.properties.$prop=$myvalue.$prop
+            }
+            $restresult=Invoke-RestMethod -UseBasicParsing -Uri $attr.url -Method Post -Body ($restrequestbody.properties | convertto-json)
+            $restoutput=$attr.output | convertfrom-json
+            foreach ($prop in ($restoutput.properties | gm).where{$_.MemberType -eq 'NoteProperty'}.name){
+                $myvalue.$prop=$restresult.$prop
+            }
+        }
+        Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $myvalue -UpdateExisting
+    }
+    $tableuser=Get-AzTableRow -RowKey $userid -PartitionKey 'User' -Table $table.cloudtable
+
+    $body=new-scimuser $tableuser
+}else{
     $body=[pscustomobject]@{
         schemas=@("urn:ietf:params:scim:api:messages:2.0:Error")
         detail="User not found"
         status=404
     }
-}elseif ($userobj.count -eq 1){
-    $userobj=$userobj[0]
-    if ($Request.body -ne $null){
-        $userjson=$Request.Body | convertfrom-json
-        $guid=$userjson.id
-        $myvalue=[pscustomobject]@{
-            PartitionKey='User'
-            RowKey=$guid
-        }
-    
-        write-host "parsing $($Request.Body | convertto-json -depth 10)"
-        write-host "parsing $($Request.Body))"
-        write-host "parsing $($userjson.displayname)"
-        foreach ($attr in $schemaAttributes.where{$_.PartitionKey -eq 'User'}.name){
-            write-host "checking for $attr=$($userjson.$attr)"
-            if ($userjson.$attr){$myvalue | add-member -notepropertyname $attr -notepropertyvalue $userjson.$attr}
-        }
-        foreach ($attr in $restAttributes){
-            $requestinputs=$attr.input.split(',')
-            $requestbody=[pscustomobject]@{}
-            foreach ($in in $requestinputs){$requestbody | Add-Member -NotePropertyName $in -NotePropertyValue $myvalue.$in}
-            write-host ($myValue | convertto-json -depth 10) 
-            $attrResult=Invoke-restmethod -Method post -Uri $attr.url -Body ($myValue | ConvertTo-Json -depth 10) -ContentType 'application/json'
-            write-host ($attrResult | ConvertTo-Json -depth 10)
-            $myvalue | add-member -notepropertyname $attr.rowkey -notepropertyvalue $attrResult.($attr.rowkey)
-        }
-        write-host ($myValue | convertto-json -depth 10) 
-        #Push-OutputBinding -Name createUser -Value $myValue 
-    }
-}else{
 }
-
-    #$result=Invoke-RestMethod -Uri "$($Request.url)/$guid" -Method Get
-#if ($result.schemas[0] -eq 'urn:ietf:params:scim:schemas:core:2.0:User'){
-#    $body=$result
-#}else{
-if ($null -eq $body){
-    $body=new-scimuser $myvalue
-}
-write-verbose $body -Verbose
 $status = [HttpStatusCode]::OK
 write-host ($status | convertto-json -depth 10) 
 write-host ($Body | convertto-json -depth 10) 
@@ -73,5 +84,5 @@ write-host ($Body | convertto-json -depth 10)
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
     Body = $Body | convertto-json -depth 10
-    headers = @{"Content-Type"= "application/json"}
+    headers = @{"Content-Type"= "application/scim+json"}
 })
