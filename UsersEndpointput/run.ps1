@@ -1,7 +1,7 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $getUser, $restAttributes)
+param($Request, $TriggerMetadata)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
 function new-scimuser ($prop){
