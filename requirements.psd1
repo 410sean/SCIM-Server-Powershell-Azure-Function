@@ -2,5 +2,8 @@
 # See https://aka.ms/functionsmanageddependency for additional information.
 #
 @{
+    # For latest supported version, go to 'https://www.powershellgallery.com/packages/Az'. 
     'Az' = '3.*'
+    'azure.storage' = '4.*'
+    'AzTable' = '2.*'
 }
