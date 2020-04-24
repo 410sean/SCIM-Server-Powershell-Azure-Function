@@ -58,14 +58,17 @@
         "methods": [ "PUT" ],
           "route": "api/users"
       },
-      "backendUri": "https://localhost/api/usersEndpointput"
+      "backendUri": "https://localhost/api/usersEndpointput",
+      "debug":true
+
     },
     "usersPathput": {
       "matchCondition": {
           "methods": [ "PUT" ],
           "route": "api/users/{*path}"
       },
-      "backendUri": "https://localhost/api/usersEndpointput"
+      "backendUri": "https://localhost/api/usersEndpointput",
+      "debug":true
     },
     "userspdelete": {
       "matchCondition": {
