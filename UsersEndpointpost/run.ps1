@@ -67,9 +67,11 @@ if ($status -eq [HttpStatusCode]::OK){ #required value check
     }
 }
 if ($status -eq [HttpStatusCode]::OK){
+    $body=new-scimuser $myvalue
+    $myvalue | add-member -NotePropertyName 'meta' -NotePropertyValue $body.meta
     Push-OutputBinding -Name createUser -Value $myValue
     $status = [HttpStatusCode]::Created
-    $body=new-scimuser $myvalue
+    
 }
 
 write-verbose $body -Verbose
