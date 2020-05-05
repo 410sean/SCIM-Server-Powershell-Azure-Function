@@ -3,7 +3,7 @@
   "proxies": { 
     "schemasPath": {
       "matchCondition": {
-          "route": "api/schemas/{*path}"
+          "route": "api/schemas/{path}"
       },
       "backendUri": "https://localhost/api/schemasEndpoint"
     },
@@ -15,7 +15,7 @@
     },
     "ResourceTypesPath": {
       "matchCondition": {
-          "route": "api/ResourceTypes/{*path}"
+          "route": "api/ResourceTypes/{path}"
       },
       "backendUri": "https://localhost/api/ResourceTypesEndpoint"
     },
@@ -35,7 +35,7 @@
     "usersPathpost": {
       "matchCondition": {
           "methods": [ "POST" ],
-          "route": "api/users/{*path}"
+          "route": "api/users/{path}"
       },
       "backendUri": "https://localhost/api/usersEndpointpost"
     },
@@ -49,7 +49,7 @@
     "usersPathget": {
       "matchCondition": {
           "methods": [ "GET" ],
-          "route": "api/users/{*path}"
+          "route": "api/users/{path}"
       },
       "backendUri": "https://localhost/api/usersEndpointget"
     },
@@ -65,7 +65,7 @@
     "usersPathput": {
       "matchCondition": {
           "methods": [ "PUT" ],
-          "route": "api/users/{*path}"
+          "route": "api/users/{path}"
       },
       "backendUri": "https://localhost/api/usersEndpointput",
       "debug":true
@@ -80,7 +80,7 @@
     "usersPathdelete": {
       "matchCondition": {
         "methods": [ "DELETE" ],
-          "route": "api/users/{*path}"
+          "route": "api/users/{path}"
       },
       "backendUri": "https://localhost/api/usersEndpointdelete"
     },
@@ -94,7 +94,7 @@
     "usersPathpatch": {
       "matchCondition": {
         "methods": [ "PATCH" ],
-          "route": "api/users/{*path}"
+          "route": "api/users/{path}"
       },
       "backendUri": "https://localhost/api/usersEndpointpatch"
     }

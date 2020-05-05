@@ -27,7 +27,8 @@ function new-scimuser ($prop){
     $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
     return $userobj
 }
-if ($null -eq (Get-AzContext)){Connect-AzAccount -Identity}
+#if ($null -eq (Get-AzContext)){Connect-AzAccount -Identity}
+Az.Storage\New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
 $userid=$Request.Params.path
 if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
     $userjson=$Request.Body | convertfrom-json -depth 100
