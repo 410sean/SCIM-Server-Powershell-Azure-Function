@@ -14,7 +14,26 @@
 if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
     Connect-AzAccount -Identity
 }
-
+function Test-BasicAuthCred($Authorization){
+    if ($env:basicauth){
+        $basicauthsettings="$($env:basicauth)".Split(';') | foreach{$_ | ConvertFrom-Stringdata}
+        if ($basicauthsettings.enabled){
+            if ($Authorization.value -like "basic *"){$hash=$Authorization.value.replace('basic ','')}else{return $false}
+            try{
+                $bytes=[convert]::frombase64string($hash)
+                $creds=[System.Text.Encoding]::utf8.Getstring($bytes).split(':')
+                if ($creds[0] -eq $basicauthsettings.client_id -and $creds[1] -eq $basicauthsettings.client_secret){
+                    return $true
+                }
+            }
+            catch{return $false}
+            
+        }else{
+            return 'disabled'
+        }
+    }
+    return $false
+}
 # Uncomment the next line to enable legacy AzureRm alias in Azure PowerShell.
 # Enable-AzureRmAlias
 

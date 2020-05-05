@@ -4,6 +4,14 @@ using namespace System.Net
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $restAttributes)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
+if ((Test-BasicAuthCred -authorization ($request.autorization) -eq $false){
+    write-host "failed basic auth"
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::Unauthorized
+        Body = $null
+    })
+    break
+}
 function new-scimuser ($prop){
     $userobj=[pscustomobject]@{
         schemas=@('urn:ietf:params:scim:schemas:core:2.0:User')
