@@ -1,16 +1,46 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $User)
+param($Request, $TriggerMetadata, $User)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
+function Test-BasicAuthCred($Authorization){
+    if ($env:basicauth){
+        $basicauthsettings="$($env:basicauth)".Split(';') | foreach{$_ | ConvertFrom-Stringdata}
+        if ($basicauthsettings.enabled){
+            if ($Authorization.value -like "basic *"){$hash=$Authorization.value.replace('basic ','')}else{return $false}
+            try{
+                $bytes=[convert]::frombase64string($hash)
+                $creds=[System.Text.Encoding]::utf8.Getstring($bytes).split(':')
+                if ($creds[0] -eq $basicauthsettings.client_id -and $creds[1] -eq $basicauthsettings.client_secret){
+                    return $true
+                }
+            }
+            catch{return $false}
+            
+        }else{
+            return 'disabled'
+        }
+    }
+    return $false
+}
+
 if ((Test-BasicAuthCred -authorization ($request.autorization)) -eq $false){
     write-host "failed basic auth"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = $null
+        Body = @{
+            status='401'
+            response=@{
+                schemas= @("urn:ietf:params:scim:api:messages:2.0:Error")
+                scimType="invalidValue"
+                detail='Basic Authentication Failed'
+                status='401'
+            }
+        }
+        headers = @{"Content-Type"= "application/scim+json"}
     })
-    return 401
+    $badauth=$true
 }
 <#GET for retrieval of resources; POST for creation,
 searching, and bulk modification; PUT for attribute replacement
@@ -53,7 +83,7 @@ if ($Request.params.path.length -eq 36){
         totalResults= $resources.count
         schemas= @("urn:ietf:params:scim:api:messages:2.0:ListResponse")
         Resources=@()
-    }    
+    }
     $startindex=($Request.Query.startIndex)-1
     if ($startindex -lt 0){$startindex=0}
     $body.startIndex=$startindex+1
@@ -89,8 +119,9 @@ $status = [HttpStatusCode]::OK
 write-host ($status | convertto-json -depth 10) 
 write-host ($body | convertto-json -depth 10) 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
+
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
     Body = $body | convertto-json -depth 10
-    headers = @{"Content-Type"= "application/json"}
+    headers = @{"Content-Type"= "application/scim+json"}
 })
