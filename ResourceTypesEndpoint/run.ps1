@@ -8,7 +8,7 @@ write-host ($TriggerMetadata | convertto-json -depth 10)
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 $status = [HttpStatusCode]::OK
-  if ($Request.params.path){
+  if ($Request.params.path -and $Request.params.path.length -ne 0){
     $targetresource=($ResourceType.where{$_.name -eq $Request.params.path})[0]
     $psbody=new-scimItem -schema 'ResourceType' -properties $targetresource -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($targetresource.name)" -includeMeta
   }else{

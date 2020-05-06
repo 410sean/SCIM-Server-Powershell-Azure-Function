@@ -44,8 +44,7 @@ function new-scimuser ($prop){
     $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
     return $userobj
 }
-#if ($null -eq (Get-AzContext)){Connect-AzAccount -Identity}
-Az.Storage\New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+$storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
 $userid=$Request.Params.path
 if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
     $userjson=$Request.Body | convertfrom-json -depth 100
@@ -55,11 +54,10 @@ if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
 if (-not $userid){
     $userid=$Request.Body.id
 }
-$storage=Get-AzStorageAccount -Name $tableconnection.accountname -ResourceGroupName $tableconnection.accountname
-$table=Get-AzStorageTable -Context $storage.Context -Name 'User'
+$table=Get-AzStorageTable -Context $storageContext -Name 'User'
 $tableuser=Get-AzTableRow -RowKey $userid -PartitionKey 'User' -Table $table.cloudtable
 if ($tableuser){
-    $schematable=Get-AzStorageTable -Context $storage.Context -Name 'SchemaAttributes'
+    $schematable=Get-AzStorageTable -Context $storageContext -Name 'SchemaAttributes'
     $schemaAttributes=Get-AzTableRow -Table $schematable.CloudTable
     $update=$false
     $myvalue=@{
@@ -70,7 +68,7 @@ if ($tableuser){
         if ($userjson.$attr -and $tableuser.$attr -ne $userjson.$attr){$myvalue.$attr=$userjson.$attr;$update=$true; $attr}
     }
     if ($update){
-        $restattributetable=Get-AzStorageTable -Context $storage.Context -Name 'restattributes'
+        $restattributetable=Get-AzStorageTable -Context $storageContext -Name 'restattributes'
         $restattributes=Get-AzTableRow -Table $restattributetable.CloudTable
         foreach ($attr in $restattributes){
             $restrequestbody=$attr.input | convertfrom-json
