@@ -1,7 +1,7 @@
 using namespace System.Net
 
 # Input bindings are passed in via param block.
-param($Request, $TriggerMetadata, $User)
+param($Request, $TriggerMetadata, $User, $schemaAttributes, $Schemas)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
 function Test-BasicAuthCred($Authorization){
