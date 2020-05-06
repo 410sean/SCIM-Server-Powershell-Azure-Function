@@ -4,7 +4,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata, $Schemas, $schemaAttributes, $User)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
-if ((Test-BasicAuthCred -authorization ($request.autorization) -eq $false){
+if ((Test-BasicAuthCred -authorization ($request.autorization)) -eq $false){
     write-host "failed basic auth"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
