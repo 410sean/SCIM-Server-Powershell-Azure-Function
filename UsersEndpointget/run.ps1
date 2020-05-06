@@ -4,28 +4,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata, $User, $schemaAttributes, $Schemas)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
-function Test-BasicAuthCred($Authorization){
-    if ($env:basicauth){
-        $basicauthsettings="$($env:basicauth)".Split(';') | foreach{$_ | ConvertFrom-Stringdata}
-        if ($basicauthsettings.enabled){
-            if ($Authorization.value -like "basic *"){$hash=$Authorization.value.replace('basic ','')}else{return $false}
-            try{
-                $bytes=[convert]::frombase64string($hash)
-                $creds=[System.Text.Encoding]::utf8.Getstring($bytes).split(':')
-                if ($creds[0] -eq $basicauthsettings.client_id -and $creds[1] -eq $basicauthsettings.client_secret){
-                    return $true
-                }
-            }
-            catch{return $false}
-            
-        }else{
-            return 'disabled'
-        }
-    }
-    return $false
-}
-
-if ((Test-BasicAuthCred -authorization ($request.Headers.autorization)) -eq $false){
+if ((Test-BasicAuthCred -authorization ($request.Headers.authorization)) -eq $false){
     write-host "failed basic auth"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
