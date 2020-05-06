@@ -27,7 +27,6 @@ function Test-BasicAuthCred($Authorization){
                 }else{
                     write-host "not using Basic auth"
                     return $false
-
                 }
             try{
                 $bytes=[convert]::frombase64string($hash)
