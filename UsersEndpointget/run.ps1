@@ -25,7 +25,7 @@ function Test-BasicAuthCred($Authorization){
     return $false
 }
 
-if ((Test-BasicAuthCred -authorization ($request.autorization)) -eq $false){
+if ((Test-BasicAuthCred -authorization ($request.Headers.autorization)) -eq $false){
     write-host "failed basic auth"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
