@@ -56,7 +56,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
     $psitem=[pscustomobject]@{
       schemas=@("urn:ietf:params:scim:schemas:core:2.0:$schema")
     }
-    foreach ($prop in $properties.getenumerator()){
+    foreach ($prop in $properties){
       if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
       if ($prop.name -like "*_*"){
           $tree="$($prop.name)".split('_')
