@@ -40,7 +40,7 @@ if ((Test-BasicAuthCred -authorization ($request.Headers.autorization)) -eq $fal
         }
         headers = @{"Content-Type"= "application/scim+json"}
     })
-    $badauth=$true
+    return
 }
 <#GET for retrieval of resources; POST for creation,
 searching, and bulk modification; PUT for attribute replacement
