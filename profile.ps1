@@ -15,16 +15,29 @@ if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
     Connect-AzAccount -Identity
 }
 function Test-BasicAuthCred($Authorization){
+    write-host $Authorization
     if ($env:basicauth){
-        $basicauthsettings="$($env:basicauth)".Split(';') | foreach{$_ | ConvertFrom-Stringdata}
-        if ($basicauthsettings.enabled){
-            if ($Authorization.value -like "basic *"){$hash=$Authorization.value.replace('basic ','')}else{return $false}
+        write-host "$($env:basicauth)"
+        $basicauthsettings="$($env:basicauth)".Split(';') | foreach-object{$_ | ConvertFrom-Stringdata}
+        if ($basicauthsettings.enabled -eq 'true'){
+            write-host "checking credentials $($Authorization | convertto-json)-"
+            if ($Authorization -like "Basic *"){
+                $hash=$Authorization.replace('Basic ','')
+                write-host "hash $hash"
+                }else{
+                    write-host "not using Basic auth"
+                    return $false
+
+                }
             try{
                 $bytes=[convert]::frombase64string($hash)
                 $creds=[System.Text.Encoding]::utf8.Getstring($bytes).split(':')
+                write-host "recieved $([System.Text.Encoding]::utf8.Getstring($bytes))"
                 if ($creds[0] -eq $basicauthsettings.client_id -and $creds[1] -eq $basicauthsettings.client_secret){
                     return $true
                 }
+                
+                
             }
             catch{return $false}
             
