@@ -4,7 +4,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata, $User, $schemaAttributes, $Schemas)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
-if ((Test-BasicAuthCred -authorization ($request.Headers.authorization)) -eq $false){
+if ((Test-BasicAuthCred -authorization ($request.Headers.Authorization)) -eq $false){
     write-host "failed basic auth"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
@@ -13,13 +13,13 @@ if ((Test-BasicAuthCred -authorization ($request.Headers.authorization)) -eq $fa
             response=@{
                 schemas= @("urn:ietf:params:scim:api:messages:2.0:Error")
                 scimType="invalidValue"
-                detail='Basic Authentication Failed'
+                detail="$($env:basicauth) recieved $($request.Headers.authorization)"
                 status='401'
             }
         }
         headers = @{"Content-Type"= "application/scim+json"}
     })
-    return
+    $keepgoing=$false
 }
 <#GET for retrieval of resources; POST for creation,
 searching, and bulk modification; PUT for attribute replacement
