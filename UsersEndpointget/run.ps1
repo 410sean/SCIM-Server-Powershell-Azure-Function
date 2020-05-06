@@ -10,7 +10,7 @@ if ((Test-BasicAuthCred -authorization ($request.autorization)) -eq $false){
         StatusCode = [HttpStatusCode]::Unauthorized
         Body = $null
     })
-    break
+    return 401
 }
 <#GET for retrieval of resources; POST for creation,
 searching, and bulk modification; PUT for attribute replacement
