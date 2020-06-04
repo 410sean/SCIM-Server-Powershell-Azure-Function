@@ -46,10 +46,10 @@ $status = [HttpStatusCode]::OK
       name= "User"
       endpoint= "/Users"
       description= "User Account"
-      meta=@(
+      meta=@{
             resourceType="ResourceType"
             location="https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
-      )
+      }
     }
   }else{
   $psbody=[pscustomobject]@{
@@ -71,10 +71,10 @@ $status = [HttpStatusCode]::OK
     name= "User"
     endpoint= "/Users"
     description= "User Account"
-    meta=@(
+    meta=@{
           resourceType="ResourceType"
           location="https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
-    )
+    }
   }
   $psbody.totalResults=$resources.count
   $psbody.resources=@($resources)
