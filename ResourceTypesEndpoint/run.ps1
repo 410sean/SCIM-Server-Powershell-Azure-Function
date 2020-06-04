@@ -48,7 +48,7 @@ $status = [HttpStatusCode]::OK
     Resources=@()
   }
   $resources=@()
-  foreach ($res in $ResourceType){
+  foreach ($res in @($ResourceType)){
     $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($res.name)" -includeMeta
   }
   $psbody.totalResults=$resources.count
