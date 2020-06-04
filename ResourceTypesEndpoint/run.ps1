@@ -22,7 +22,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
             $psitem | add-member -notepropertyname "$($tree[0])" -notepropertyvalue ([pscustomobject]@{"$($tree[1])"=$prop.value}) -verbose
         }
     }else{
-        write-host $prop.name = $prop.value
+        write-host "$($prop.name) = $($prop.value)"
         $psitem | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
     }
   }
