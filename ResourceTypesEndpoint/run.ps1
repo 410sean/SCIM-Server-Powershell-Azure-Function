@@ -22,7 +22,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
             $psitem | add-member -notepropertyname "$($tree[0])" -notepropertyvalue ([pscustomobject]@{"$($tree[1])"=$prop.value}) -verbose
         }
     }else{
-        write-host "$($prop.name) = $($prop.value)"
+        write-host "$($prop | convertto-json)"
         $psitem | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
     }
   }
@@ -40,6 +40,17 @@ $status = [HttpStatusCode]::OK
     $targetresource=($ResourceType.where{$_.name -eq $Request.params.path})[0]
     write-host "converting resourcetype $($targetresource | convertto-json)"
     $psbody=new-scimItem -schema 'ResourceType' -properties $targetresource -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($targetresource.name)" -includeMeta
+    $psbody=@{
+      schemas=@("urn:ietf:params:scim:schemas:core:2.0:ResourceType")
+      id= "User"
+      name= "User"
+      endpoint= "/Users"
+      description= "User Account"
+      meta=@(
+            resourceType="ResourceType"
+            location="https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
+      )
+    }
   }else{
   $psbody=[pscustomobject]@{
     totalResults=0
@@ -52,6 +63,18 @@ $status = [HttpStatusCode]::OK
   foreach ($res in @($ResourceType)){
     write-host $res | convertto-json
     $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($res.name)" -includeMeta
+    
+  }
+  $resources=@{
+    schemas=@("urn:ietf:params:scim:schemas:core:2.0:ResourceType")
+    id= "User"
+    name= "User"
+    endpoint= "/Users"
+    description= "User Account"
+    meta=@(
+          resourceType="ResourceType"
+          location="https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
+    )
   }
   $psbody.totalResults=$resources.count
   $psbody.resources=@($resources)
