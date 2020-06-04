@@ -12,7 +12,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
   $psitem=[pscustomobject]@{
     schemas=@("urn:ietf:params:scim:schemas:core:2.0:$schema")
   }
-  foreach ($prop in $properties.PSObject.Properties){
+  foreach ($prop in $properties){
     if ($prop.name -in ('PartitionKey','RowKey','Timestamp')){continue}
     if ($prop.name -like "*_*"){
         $tree="$($prop.name)".split('_')
@@ -22,6 +22,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
             $psitem | add-member -notepropertyname "$($tree[0])" -notepropertyvalue ([pscustomobject]@{"$($tree[1])"=$prop.value}) -verbose
         }
     }else{
+        write-host $prop.name = $prop.value
         $psitem | add-member -notepropertyname $prop.name -notepropertyvalue $prop.value -verbose
     }
   }
@@ -50,8 +51,7 @@ $status = [HttpStatusCode]::OK
   $resources=@()
   foreach ($res in @($ResourceType)){
     write-host $res | convertto-json
-    $resources+=$res
-    #new-scimItem -schema 'ResourceType' -properties $res -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($res.name)" -includeMeta
+    $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($res.name)" -includeMeta
   }
   $psbody.totalResults=$resources.count
   $psbody.resources=@($resources)
