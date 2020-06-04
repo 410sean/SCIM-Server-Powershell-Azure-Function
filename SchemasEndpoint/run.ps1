@@ -44,7 +44,7 @@ if ($Request.params.path){
     totalResults=0
     itemsPerPage=100
     startIndex=1
-    schemas=@("urn:ietf:params:scim:schemas:core:2.0:ListResponse")
+    schemas=@("urn:ietf:params:scim:api:messages:2.0:ListResponse")
     Resources=@()
   }
   $resources=@()
