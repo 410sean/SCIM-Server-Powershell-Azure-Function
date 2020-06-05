@@ -40,7 +40,34 @@ $status = [HttpStatusCode]::OK
     $targetresource=($ResourceType.where{$_.name -eq $Request.params.path})[0]
     write-host "converting resourcetype $($targetresource | convertto-json)"
     $psbody=new-scimItem -schema 'ResourceType' -properties $targetresource -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($targetresource.name)" -includeMeta
-    $psbody=@{
+    $psbody='{
+      "meta": {
+        "resourceType": "ResourceType",
+        "location": "https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
+      },
+      "endpoint": "/Users",
+      "id": "User",
+      "description": "User Account",
+      "schemas": [
+        "urn:ietf:params:scim:schemas:core:2.0:ResourceType"
+      ],
+      "name": "User"
+    }'
+  }else{
+    $psbody=[pscustomobject]@{
+      totalResults=0
+      itemsPerPage=100
+      startIndex=1
+      schemas=@("urn:ietf:params:scim:api:messages:2.0:ListResponse")
+      Resources=@()
+    }
+    $resources=@()
+    foreach ($res in @($ResourceType)){
+      write-host $res | convertto-json
+      $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($res.name)" -includeMeta
+      
+    }
+    $resources=@{
       schemas=@("urn:ietf:params:scim:schemas:core:2.0:ResourceType")
       id= "User"
       name= "User"
@@ -51,33 +78,8 @@ $status = [HttpStatusCode]::OK
             location="https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
       }
     }
-  }else{
-  $psbody=[pscustomobject]@{
-    totalResults=0
-    itemsPerPage=100
-    startIndex=1
-    schemas=@("urn:ietf:params:scim:api:messages:2.0:ListResponse")
-    Resources=@()
-  }
-  $resources=@()
-  foreach ($res in @($ResourceType)){
-    write-host $res | convertto-json
-    $resources+=new-scimItem -schema 'ResourceType' -properties $res -location "https://$($Request.Headers.'disguised-host')/api/ResourceType/$($res.name)" -includeMeta
-    
-  }
-  $resources=@{
-    schemas=@("urn:ietf:params:scim:schemas:core:2.0:ResourceType")
-    id= "User"
-    name= "User"
-    endpoint= "/Users"
-    description= "User Account"
-    meta=@{
-          resourceType="ResourceType"
-          location="https://allegisgroupscim.azurewebsites.net:443/api/ResourceType/user"
-    }
-  }
-  $psbody.totalResults=$resources.count
-  $psbody.resources=@($resources)
+    $psbody.totalResults=$resources.count
+    $psbody.resources=@($resources)
 }
 write-host ($status | convertto-json -depth 10) 
 write-host ($psbody | convertto-json -depth 10) 

@@ -48,7 +48,7 @@
 				"route": "api/users"
 			},
 			"backendUri": "https://localhost/api/usersEndpointpatch"
-    },
+    	},
 		"schemasPath": {
 			"matchCondition": {
 				"route": "api/schemas/{path}"
