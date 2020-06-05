@@ -1,102 +1,101 @@
 {
-  "$schema": "http://json.schemastore.org/proxies",
-  "proxies": { 
-    "schemasPath": {
-      "matchCondition": {
-          "route": "api/schemas/{path}"
-      },
-      "backendUri": "https://localhost/api/schemasEndpoint"
+	"$schema": "http://json.schemastore.org/proxies",
+	"proxies": {
+		"ResourceTypes": {
+			"matchCondition": {
+				"route": "api/ResourceTypes"
+			},
+			"backendUri": "https://localhost/api/ResourceTypesEndpoint"
+		},
+		"schemas": {
+			"matchCondition": {
+				"route": "api/schemas"
+			},
+			"backendUri": "https://localhost/api/schemasEndpoint"
+		},
+		"usersget": {
+			"matchCondition": {
+				"methods": ["GET"],
+				"route": "api/users"
+			},
+			"backendUri": "https://localhost/api/usersEndpointget"
+		},
+		"userspost": {
+			"matchCondition": {
+				"methods": ["POST"],
+				"route": "api/users"
+			},
+			"backendUri": "https://localhost/api/usersEndpointpost"
+		},
+		"usersput": {
+			"matchCondition": {
+				"methods": ["PUT"],
+				"route": "api/users"
+			},
+			"backendUri": "https://localhost/api/usersEndpointput",
+			"debug": true
+		},
+		"userspdelete": {
+			"matchCondition": {
+				"methods": ["DELETE"],
+				"route": "api/users"
+			},
+			"backendUri": "https://localhost/api/usersEndpointdelete"
+		},
+		"userspatch": {
+			"matchCondition": {
+				"methods": ["PATCH"],
+				"route": "api/users"
+			},
+			"backendUri": "https://localhost/api/usersEndpointpatch"
     },
-    "schemas": {
-      "matchCondition": {
-          "route": "api/schemas"
-      },
-      "backendUri": "https://localhost/api/schemasEndpoint"
-    },
-    "ResourceTypesPath": {
-      "matchCondition": {
-          "route": "api/ResourceTypes/{path}"
-      },
-      "backendUri": "https://localhost/api/ResourceTypesEndpoint"
-    },
-    "ResourceTypes": {
-      "matchCondition": {
-          "route": "api/ResourceTypes"
-      },
-      "backendUri": "https://localhost/api/ResourceTypesEndpoint"
-    },
-    "userspost": {
-      "matchCondition": {
-          "methods": [ "POST" ],
-          "route": "api/users"
-      },
-      "backendUri": "https://localhost/api/usersEndpointpost"
-    },
-    "usersPathpost": {
-      "matchCondition": {
-          "methods": [ "POST" ],
-          "route": "api/users/{path}"
-      },
-      "backendUri": "https://localhost/api/usersEndpointpost"
-    },
-    "usersget": {
-      "matchCondition": {
-          "methods": [ "GET" ],
-          "route": "api/users"
-      },
-      "backendUri": "https://localhost/api/usersEndpointget"
-    },
-    "usersPathget": {
-      "matchCondition": {
-          "methods": [ "GET" ],
-          "route": "api/users/{path}"
-      },
-      "backendUri": "https://localhost/api/usersEndpointget"
-    },
-    "usersput": {
-      "matchCondition": {
-        "methods": [ "PUT" ],
-          "route": "api/users"
-      },
-      "backendUri": "https://localhost/api/usersEndpointput",
-      "debug":true
-
-    },
-    "usersPathput": {
-      "matchCondition": {
-          "methods": [ "PUT" ],
-          "route": "api/users/{path}"
-      },
-      "backendUri": "https://localhost/api/usersEndpointput",
-      "debug":true
-    },
-    "userspdelete": {
-      "matchCondition": {
-        "methods": [ "DELETE" ],
-          "route": "api/users"
-      },
-      "backendUri": "https://localhost/api/usersEndpointdelete"
-    },
-    "usersPathdelete": {
-      "matchCondition": {
-        "methods": [ "DELETE" ],
-          "route": "api/users/{path}"
-      },
-      "backendUri": "https://localhost/api/usersEndpointdelete"
-    },
-    "userspatch": {
-      "matchCondition": {
-          "methods": [ "PATCH" ],
-          "route": "api/users"
-      },
-      "backendUri": "https://localhost/api/usersEndpointpatch"
-    },
-    "usersPathpatch": {
-      "matchCondition": {
-        "methods": [ "PATCH" ],
-          "route": "api/users/{path}"
-      },
-      "backendUri": "https://localhost/api/usersEndpointpatch"
-    }
-   }
+		"schemasPath": {
+			"matchCondition": {
+				"route": "api/schemas/{path}"
+			},
+			"backendUri": "https://localhost/api/schemasEndpoint"
+		},
+		"ResourceTypesPath": {
+			"matchCondition": {
+				"route": "api/ResourceTypes/{path}"
+			},
+			"backendUri": "https://localhost/api/ResourceTypesEndpoint"
+		},
+		"usersPathpost": {
+			"matchCondition": {
+				"methods": ["POST"],
+				"route": "api/users/{path}"
+			},
+			"backendUri": "https://localhost/api/usersEndpointpost"
+		},
+		"usersPathget": {
+			"matchCondition": {
+				"methods": ["GET"],
+				"route": "api/users/{path}"
+			},
+			"backendUri": "https://localhost/api/usersEndpointget"
+		},
+		"usersPathput": {
+			"matchCondition": {
+				"methods": ["PUT"],
+				"route": "api/users/{path}"
+			},
+			"backendUri": "https://localhost/api/usersEndpointput",
+			"debug": true
+		},
+		"usersPathdelete": {
+			"matchCondition": {
+				"methods": ["DELETE"],
+				"route": "api/users/{path}"
+			},
+			"backendUri": "https://localhost/api/usersEndpointdelete"
+		},
+		"usersPathpatch": {
+			"matchCondition": {
+				"methods": ["PATCH"],
+				"route": "api/users/{path}"
+			},
+			"backendUri": "https://localhost/api/usersEndpointpatch"
+		}
+	}
 }
