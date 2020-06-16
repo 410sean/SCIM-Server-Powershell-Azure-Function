@@ -16,5 +16,5 @@ write-host ($psbody | convertto-json -depth 10)
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
-    Body = $response
+    Body = $response | convertto-json -Depth 10
 })
