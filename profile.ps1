@@ -14,6 +14,8 @@
 if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
     Connect-AzAccount -Identity
 }
+
+<#begin custom auth function#>
 function Test-BasicAuthCred($Authorization){
     write-host $Authorization
     if ($env:basicauth){
@@ -50,6 +52,8 @@ function Test-BasicAuthCred($Authorization){
 # Enable-AzureRmAlias
 
 # You can also define functions or aliases that can be referenced in any of your PowerShell functions.
+
+<#begin helper scim functions#>
 function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
     #will create item starting with schema and ending with meta
     #nested properties should have a property name that can be split by underscore '_'
@@ -78,8 +82,8 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
     }
     return $psitem
   }
-
-  function Get-AzTableRow
+<#begin helper scim functions v2#>
+function Get-AzTableRow
 {
     <#
     .SYNOPSIS
@@ -456,8 +460,9 @@ function new-scimError{
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string][ValidateSet('307','308','400','401','403','404','409','412','413','500','501')]$status,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $false)]
         [string][ValidateSet('invalidFilter','tooMany','uniqueness','mutability','invalidSyntax','invalidPath','noTarget','invalidValue','invalidVers','sensitive',$null)]$scimtype,
+        [Parameter(Mandatory = $false)]
         [string]$detail
     )
     $errorResponse=[PSCustomObject]@{
@@ -478,7 +483,7 @@ function new-scimListResponse($resources){
         startIndex=0
         Resources=0        
     }
-    $json=test-json $resources
+    #$json=test-json $resources
     if ($json){
         $resources=$resources | ConvertFrom-Json
     }
@@ -496,14 +501,16 @@ function get-scimServiceProviderConfig {
 function get-scimResourceTypes ($path) {
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'ResourceType'
-    $resourcetypes=$rows.json | ConvertFrom-Json
     if ($path){
-        $response=$resourcetypes.where{$_.RowKey -eq $path}[0]
+        $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'ResourceType' -RowKey $path
+        $resourcetypes=$rows.json | ConvertFrom-Json
+        $response=$resourcetypes
         if ($response.count -eq 0){
             $response=new-scimError -status 404 -detail "Resorce Type '$path' not found"
         }
     }else{
+        $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'ResourceType'
+        $resourcetypes=$rows.json | ConvertFrom-Json
         $response=new-scimListResponse -resources $resourcetypes
     }
     return ($response)
@@ -514,7 +521,7 @@ function get-scimSchema ($path) {
     if ($path){
         $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Schema' -RowKey $path
         $resourcetypes=$rows.json | ConvertFrom-Json
-        $response=$resourcetypes.where{$_.RowKey -eq $path}[0]
+        $response=$resourcetypes
         if ($response.count -eq 0){
             $response=new-scimError -status 404 -detail "Resorce Type '$path' not found"
         }
@@ -522,8 +529,7 @@ function get-scimSchema ($path) {
         $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Schema'
         $resourcetypes=$rows.json | ConvertFrom-Json
         $response=new-scimListResponse -resources $resourcetypes
-    }
-    
+    }    
     return ($response)
 }
 function get-ScimItem {

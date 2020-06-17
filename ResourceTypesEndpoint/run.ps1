@@ -13,8 +13,8 @@ if ($Request.params.path){
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.name)"  
 }else{
   $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:ResourceType'
-  foreach ($resource in $response.resource){
-    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes$($resource.name)"
+  foreach ($resource in $response.resources){
+    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)"
   }
 } 
 
