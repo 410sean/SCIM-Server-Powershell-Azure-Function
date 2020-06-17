@@ -83,6 +83,7 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
     return $psitem
   }
 <#begin helper scim functions v2#>
+
 function Get-AzTableRow
 {
     <#
@@ -481,13 +482,13 @@ function new-scimListResponse($resources){
         totalResults=0
         itemsPerPage=0
         startIndex=0
-        Resources=0        
+        Resources=@()      
     }
     #$json=test-json $resources
     if ($json){
-        $resources=$resources | ConvertFrom-Json
+        $resources=@($resources) | ConvertFrom-Json
     }
-    $listresponse.Resources=$resources
+    $listresponse.Resources=@($resources)
     $listresponse.totalResults=$resources.count
     $listresponse.itemsPerPage=$resources.itemsPerPage
     return $listresponse
