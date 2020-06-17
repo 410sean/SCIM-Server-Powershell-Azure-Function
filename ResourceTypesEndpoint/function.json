@@ -13,15 +13,6 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
-    },
-    {
-      "type": "table",
-      "name": "ResourceType",
-      "tableName": "resourceType",
-      "partitionKey": "ResourceType",
-      "take": 50,
-      "connection": "AzureWebJobsStorage",
-      "direction": "in"
     }
   ]
 }
