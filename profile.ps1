@@ -511,7 +511,7 @@ function get-scimResourceTypes ($path) {
         }
     }else{
         $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'ResourceType'
-        $resourcetypes=$rows.json | ConvertFrom-Json
+        $resourcetypes=@($rows.json | ForEach-Object {convertfrom-json -InputObject $_})
         $response=new-scimListResponse -resources $resourcetypes
     }
     return ($response)
@@ -522,16 +522,27 @@ function get-scimSchema ($path) {
     if ($path){
         $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Schema' -RowKey $path
         $resourcetypes=$rows.json | ConvertFrom-Json
+        $resourcetypes.attributes=get-scimSchemaAttributes -schema $resourcetypes.id
         $response=$resourcetypes
         if ($response.count -eq 0){
             $response=new-scimError -status 404 -detail "Resorce Type '$path' not found"
         }
     }else{
         $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Schema'
-        $resourcetypes=$rows.json | ConvertFrom-Json
+        $resourcetypes=@($rows.json | ForEach-Object {convertfrom-json -InputObject $_})
+        ForEach ($resource in $resourcetypes){
+            $resource.attributes=get-scimSchemaAttributes -schema $resource.id
+        }
         $response=new-scimListResponse -resources $resourcetypes
     }    
     return ($response)
+}
+function get-scimSchemaAttributes ($schema){
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey $Schema
+    $attributes=@($rows.json | ForEach-Object {convertfrom-json -InputObject $_})
+    return @($attributes)
 }
 function get-ScimItem {
     [cmdletbinding()]
