@@ -11,35 +11,6 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
-    },
-    {
-      "type": "table",
-      "name": "Schemas",
-      "tableName": "Schemas",
-      "take": 50,
-      "connection": "AzureWebJobsStorage",
-      "direction": "in"
-    },
-    {
-      "type": "table",
-      "name": "schemaAttributes",
-      "tableName": "schemaAttributes",
-      "connection": "AzureWebJobsStorage",
-      "direction": "in"
-    },
-    {
-      "type": "table",
-      "name": "restAttributes",
-      "tableName": "restAttributes",
-      "connection": "AzureWebJobsStorage",
-      "direction": "in"
-    },
-    {
-      "type": "table",
-      "name": "createUser",
-      "tableName": "User",
-      "connection": "AzureWebJobsStorage",
-      "direction": "out"
     }
   ]
 }
