@@ -4,19 +4,11 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 write-host ($request | convertto-json -depth 10) 
 write-host ($TriggerMetadata | convertto-json -depth 10) 
-if ((Test-BasicAuthCred -authorization ($request.Headers.Authorization)) -eq $false){
-    write-host "failed basic auth"
+$body=Test-BasicAuthCred -authorization ($request.Headers.Authorization)
+if ($null -ne $body){
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = @{
-            status='401'
-            response=@{
-                schemas= @("urn:ietf:params:scim:api:messages:2.0:Error")
-                scimType="invalidValue"
-                detail="$($env:basicauth) recieved $($request.Headers.authorization)"
-                status='401'
-            }
-        }
+        Body = $body
         headers = @{"Content-Type"= "application/scim+json"}
     })
     $keepgoing=$false

@@ -15,39 +15,6 @@ if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
     Connect-AzAccount -Identity
 }
 
-<#begin custom auth function#>
-function Test-BasicAuthCred($Authorization){
-    write-host $Authorization
-    if ($env:basicauth){
-        write-host "$($env:basicauth)"
-        $basicauthsettings="$($env:basicauth)".Split(';') | foreach-object{$_ | ConvertFrom-Stringdata}
-        if ($basicauthsettings.enabled -eq 'true'){
-            write-host "checking credentials $($Authorization | convertto-json)-"
-            if ($Authorization -like "Basic *"){
-                $hash=$Authorization.replace('Basic ','')
-                write-host "hash $hash"
-                }else{
-                    write-host "not using Basic auth"
-                    return $false
-                }
-            try{
-                $bytes=[convert]::frombase64string($hash)
-                $creds=[System.Text.Encoding]::utf8.Getstring($bytes).split(':')
-                write-host "recieved $([System.Text.Encoding]::utf8.Getstring($bytes))"
-                if ($creds[0] -eq $basicauthsettings.client_id -and $creds[1] -eq $basicauthsettings.client_secret){
-                    return $true
-                }
-                
-                
-            }
-            catch{return $false}
-            
-        }else{
-            return 'disabled'
-        }
-    }
-    return $false
-}
 # Uncomment the next line to enable legacy AzureRm alias in Azure PowerShell.
 # Enable-AzureRmAlias
 
@@ -83,7 +50,6 @@ function new-scimItem ($schema, $properties, $location, [switch]$includeMeta){
     return $psitem
   }
 <#begin helper scim functions v2#>
-
 function Get-AzTableRow
 {
     <#
@@ -136,6 +102,30 @@ function Get-AzTableRow
         [Parameter(ParameterSetName="byColummnGuid")]
         [Parameter(ParameterSetName="byCustomFilter")]
         $Table,
+        
+        [Parameter(Mandatory=$false,ParameterSetName="GetAll")]
+        [Parameter(ParameterSetName="byPartitionKey")]
+        [Parameter(ParameterSetName="byPartRowKeys")]
+        [Parameter(ParameterSetName="byColummnString")]
+        [Parameter(ParameterSetName="byColummnGuid")]
+        [Parameter(ParameterSetName="byCustomFilter")]
+        $Token=$null,
+        
+        [Parameter(Mandatory=$false,ParameterSetName="GetAll")]
+        [Parameter(ParameterSetName="byPartitionKey")]
+        [Parameter(ParameterSetName="byPartRowKeys")]
+        [Parameter(ParameterSetName="byColummnString")]
+        [Parameter(ParameterSetName="byColummnGuid")]
+        [Parameter(ParameterSetName="byCustomFilter")]
+        [switch]$returnToken,
+        
+        [Parameter(Mandatory=$false,ParameterSetName="GetAll")]
+        [Parameter(ParameterSetName="byPartitionKey")]
+        [Parameter(ParameterSetName="byPartRowKeys")]
+        [Parameter(ParameterSetName="byColummnString")]
+        [Parameter(ParameterSetName="byColummnGuid")]
+        [Parameter(ParameterSetName="byCustomFilter")]
+        $TakeCount=$null,
 
         [Parameter(Mandatory=$true,ParameterSetName="byPartitionKey")]
         [Parameter(ParameterSetName="byPartRowKeys")]
@@ -408,23 +398,30 @@ function ExecuteQueryAsync
         [Parameter(Mandatory=$true)]
         $Table,
         [Parameter(Mandatory=$true)]
-        $TableQuery
+        $TableQuery,
+        [Parameter(Mandatory=$false)]
+        $token=$null,
+        [Parameter(Mandatory=$false)]
+        [switch]$returnToken
     )
     # Internal function
     # Executes query in async mode
 
     if ($TableQuery -ne $null)
     {
-        $token = $null
         $AllRows = @()
         do
         {
             $Results = $Table.ExecuteQuerySegmentedAsync($TableQuery, $token)
             $token = $Results.Result.ContinuationToken
             $AllRows += $Results.Result.Results
-        } while ($token)
-    
-        return $AllRows
+        } while ($token -and -not $TableQuery.TakeCount)
+        if ($returnToken){
+            return $AllRows,$token
+        }else{
+            return $AllRows
+        }
+        
     }
 }
 
@@ -456,6 +453,68 @@ function GetPSObjectFromEntity($entityList)
 
 }
 
+function Add-AzTableRow
+{
+    <#
+    .SYNOPSIS
+        Adds a row/entity to a specified table
+    .DESCRIPTION
+        Adds a row/entity to a specified table
+    .PARAMETER Table
+        Table object of type Microsoft.Azure.Cosmos.Table.CloudTable where the entity will be added
+    .PARAMETER PartitionKey
+        Identifies the table partition
+    .PARAMETER RowKey
+        Identifies a row within a partition
+    .PARAMETER Property
+        Hashtable with the columns that will be part of the entity. e.g. @{"firstName"="Paulo";"lastName"="Marques"}
+    .PARAMETER UpdateExisting
+        Signalizes that command should update existing row, if such found by PartitionKey and RowKey. If not found, new row is added.
+    .EXAMPLE
+        # Adding a row
+        Add-AzTableRow -Table $Table -PartitionKey $PartitionKey -RowKey ([guid]::NewGuid().tostring()) -property @{"firstName"="Paulo";"lastName"="Costa";"role"="presenter"}
+    #>
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        $Table,
+        
+        [Parameter(Mandatory=$true)]
+        [AllowEmptyString()]
+        [String]$PartitionKey,
+
+        [Parameter(Mandatory=$true)]
+        [AllowEmptyString()]
+        [String]$RowKey,
+
+        [Parameter(Mandatory=$false)]
+        [hashtable]$property,
+        [Switch]$UpdateExisting
+    )
+    
+    # Creates the table entity with mandatory PartitionKey and RowKey arguments
+    $entity = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.DynamicTableEntity" -ArgumentList $PartitionKey, $RowKey
+    
+    # Adding the additional columns to the table entity
+    foreach ($prop in $property.Keys)
+    {
+        if ($prop -ne "TableTimestamp")
+        {
+            $entity.Properties.Add($prop, $property.Item($prop))
+        }
+    }
+
+    if ($UpdateExisting)
+    {
+        return ($Table.Execute([Microsoft.Azure.Cosmos.Table.TableOperation]::InsertOrReplace($entity)))
+    }
+    else
+    {
+        return ($Table.Execute([Microsoft.Azure.Cosmos.Table.TableOperation]::Insert($entity)))
+    }
+}
+
 function new-scimError{
     [cmdletbinding()]
     param(
@@ -476,7 +535,13 @@ function new-scimError{
     }
     return $errorResponse
 }
-function new-scimListResponse($resources){
+function new-scimListResponse{
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        $resources,
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+        [int]$totalresults=$null
+    )
     $listresponse=[pscustomobject]@{
         schema=@('urn:ietf:params:scim:api:messages:2.0:ListResponse')
         totalResults=0
@@ -489,8 +554,8 @@ function new-scimListResponse($resources){
         $resources=@($resources) | ConvertFrom-Json
     }
     $listresponse.Resources=@($resources)
-    $listresponse.totalResults=$resources.count
-    $listresponse.itemsPerPage=$resources.itemsPerPage
+    $listresponse.totalResults=(@($resources.count,$totalresults) | measure-object -Maximum).maximum
+    $listresponse.itemsPerPage=$resources.count
     return $listresponse
 }
 function get-scimServiceProviderConfig {
@@ -537,12 +602,96 @@ function get-scimSchema ($path) {
     }    
     return ($response)
 }
-function get-scimSchemaAttributes ($schema){
+
+function new-scimItemUser{
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        $user
+    )
+    $scimuser=@{
+        schemas=@('urn:ietf:params:scim:schemas:core:2.0:User')
+        id = $user.rowkey
+        meta=$user.meta
+    }
+    foreach ($prop in (get-scimSchemaAttributes -schema $scimuser.schemas[0]).where{$_.name -notin @('id')}){
+        $scimuser.($prop.name)=$user.($prop.name)
+    }
+    if (test-json $scimuser.meta){$scimuser.meta=$scimuser.meta | convertfrom-json}
+    return $scimuser
+}
+function get-scimUser {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+        [int]$startIndex=1,
+        [Parameter(Mandatory = $false)]
+        [int]$itemsPerPage=$null,
+        [Parameter(Mandatory = $false)]
+        [string]$attributes=$null,
+        [Parameter(Mandatory = $false)]
+        [string]$filter=$null,
+        [Parameter(Mandatory = $false)]
+        [string]$path=$null
+    )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+    if ($path){ #single resource
+        $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
+        $TableQuery.FilterString="RowKey eq '$path'"
+        $rows=GetPSObjectFromEntity(ExecuteQueryAsync -Table $table.CloudTable -TableQuery $TableQuery)
+        if ($rows.count -eq 0){
+            return new-scimError -status 404 -detail "User '$path' not found"
+        }
+        $scimuser=new-scimItemUser -user $rows
+        return $scimuser
+    }#after this point, list response of query
+    $serverConfig=[int](get-scimServiceProviderConfig).filter.maxResults
+    if ($itemsPerPage -eq 0){$itemsPerPage=$serverConfig}
+    [int]$itemsPerPage=(@($serverconfig,$itemsPerPage) | measure-object -Minimum).Minimum
+    $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
+    <#
+    $TableQuery.TakeCount=$startIndex*$itemsPerPage
+    if ($startIndex -eq 1){
+        $token=$null
+    }
+    #>
+    if ($filter){ 
+        $TableQuery.FilterString=$filter
+    }
+    if ($attributes)  {
+        $TableQuery.SelectColumns=@($attributes)
+    }
+    $rows=GetPSObjectFromEntity(ExecuteQueryAsync -Table $table.CloudTable -TableQuery $TableQuery)
+    $scimusers=@()
+    $start=$startindex-1
+    $finish=$start+[int]$itemsPerPage-1
+    $finish=(@($finish,$rows.count) | measure-object -minimum).minimum
+    ForEach ($resource in $rows[$start..$finish]){
+        $scimusers+=$resource | new-scimItemUser
+    }
+    $response=new-scimListResponse -resources $scimusers -totalResults $rows.count
+    $response.startIndex=$startIndex
+    return ($response)     
+}
+function get-scimSchemaAttributes {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string]$schema,
+        [Parameter(Mandatory = $false)]
+        [switch]$tableObjects
+    )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
     $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey $Schema
-    $attributes=@($rows.json | ForEach-Object {convertfrom-json -InputObject $_})
-    return @($attributes)
+    if ($tableObjects){
+        $rows | foreach {$_.json=convertfrom-json $_.json}
+        return $rows
+    }else{
+        $attributes=@($rows.json | ForEach-Object {convertfrom-json -InputObject $_})
+        return @($attributes)
+    }
 }
 function get-ScimItem {
     [cmdletbinding()]
@@ -561,21 +710,210 @@ function get-ScimItem {
             "urn:ietf:params:scim:api:messages:2.0:BulkRequest",
             "urn:ietf:params:scim:api:messages:2.0:BulkResponse",
             "urn:ietf:params:scim:api:messages:2.0:Error")]$schemaURI,
-            [Parameter(Mandatory = $false)]
-            [string]$path
+        [Parameter(Mandatory = $false)]
+        [string]$path,
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName='Error')]
+        [string][ValidateSet('307','308','400','401','403','404','409','412','413','500','501')]$statusCode,
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName='Error')]
+        [string]$detail,
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName='Error')]
+        [string]$scimType,
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName='ListResponse')]
+        [string]$resources
     )
     switch($schemauri){
         "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"{return get-scimServiceProviderConfig}
         "urn:ietf:params:scim:schemas:core:2.0:ResourceType"{return get-scimResourceTypes -path $path}
         "urn:ietf:params:scim:schemas:core:2.0:Schema"{return get-scimSchema -path $path}
-        "urn:ietf:params:scim:schemas:core:2.0:User"{}
-        "urn:ietf:params:scim:api:messages:2.0:ListResponse"{}
+        "urn:ietf:params:scim:schemas:core:2.0:User"{return get-scimuser -path $path }
+        "urn:ietf:params:scim:api:messages:2.0:ListResponse"{return new-scimListResponse -resources $resources}
         "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"{}
         "urn:ietf:params:scim:schemas:core:2.0:Group"{}
         "urn:ietf:params:scim:api:messages:2.0:SearchRequest"{}
         "urn:ietf:params:scim:api:messages:2.0:PatchOp"{}
         "urn:ietf:params:scim:api:messages:2.0:BulkRequest"{}
         "urn:ietf:params:scim:api:messages:2.0:BulkResponse"{}
-        "urn:ietf:params:scim:api:messages:2.0:Error"{}
+        "urn:ietf:params:scim:api:messages:2.0:Error"{return new-scimError -status $statusCode -detail $detail -scimtype $scimType}
     }
+}
+
+#function get-scimuserobject{
+#    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+#    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+#    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'User' -RowKey $path
+#}
+
+function update-scimuserput ($request,$method) {
+    $schema=get-scimSchemaAttributes -schema 'urn:ietf:params:scim:schemas:core:2.0:User' -tableObjects
+    $guid=$request.id
+    $user=get-scimuser -path $guid
+    get-scimUser -path $request.id
+    foreach($attribute in $schema){
+        $response=test-scimuserconstraintUniqueness -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        $response=test-scimuserconstraintRequired -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        $response=test-scimuserconstraintMutability -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        $response=test-scimuserconstraintType -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        if ($attribute.url){
+            $scimuser.($attribute.rowkey)=get-scimrestattribute -attributeschema $attribute -request $request
+        }else{
+            $scimuser.($attribute.rowkey)=$request.($attribute.rowkey)
+        }
+    }
+    $timestamp=(get-date).ToUniversalTime().getdatetimeformats()[101]
+    $scimuser.meta=@{
+        resourceType='User'
+        created = $timestamp
+        lastModified = $timestamp
+        location="/Users/$($scimuser.RowKey)"
+    } | convertto-json
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+    Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $scimuser
+    $newuser=get-scimUser -path $guid
+    return $newuser
+}
+
+function new-scimuser ($request) {
+    $schema=get-scimSchemaAttributes -schema 'urn:ietf:params:scim:schemas:core:2.0:User' -tableObjects
+    $guid=(new-guid).guid
+    $scimuser=@{
+        PartitionKey='User'
+        RowKey=$guid
+    }
+    foreach($attribute in $schema){
+        $response=test-scimuserconstraintUniqueness -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        $response=test-scimuserconstraintRequired -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        $response=test-scimuserconstraintMutability -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        $response=test-scimuserconstraintType -attributeschema $attribute -value $request.($attribute.rowkey)
+        if ($response){return $response}
+        if ($attribute.url){
+            $temp=get-scimrestattribute -attributeschema $attribute -request $request
+            if ($null -ne $temp){
+                $scimuser.($attribute.rowkey)=$temp
+            }
+        }else{
+            $temp=$request.($attribute.rowkey)
+            if ($null -ne $temp){
+                $scimuser.($attribute.rowkey)=$temp
+            }
+        }
+    }
+    $scimuser.id=$guid
+    $timestamp=(get-date).ToUniversalTime().getdatetimeformats()[101]
+    $scimuser.meta=@{
+        resourceType='User'
+        created = $timestamp
+        lastModified = $timestamp
+        location="/Users/$($scimuser.RowKey)"
+    } | convertto-json
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+    Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $scimuser
+    $newuser=get-scimUser -path $guid
+    return $newuser
+}
+
+#test-scimuserconstraint will return a scim error if a bad input is found (#TODO)
+
+function test-scimuserconstraintUniqueness {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$attributeschema,
+        [Parameter(Mandatory = $false)]
+        $value
+    )
+    if ($attributeschema.json.uniqueness -in @('none',$null)){return $null}
+    return $null
+}
+
+function test-scimuserconstraintRequired {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$attributeschema,
+        [Parameter(Mandatory = $false)]
+        $value
+    )
+    if ($attributeschema.json.required -in @('False',$null)){return $null}
+    return $null
+}
+
+function test-scimuserconstraintMutability {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$attributeschema,
+        [Parameter(Mandatory = $false)]
+        $value
+    )
+    if ($attributeschema.json.mutability -in @('readWrite',$null)){return $null}
+    return $null
+}
+
+function test-scimuserconstraintType {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$attributeschema,
+        [Parameter(Mandatory = $false)]
+        $value
+    )
+    return $null
+}   
+
+function get-scimRestAttribute {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$attributeschema,
+        [Parameter(Mandatory = $true)]
+        [object]$request
+    )
+    $body=($attributeschema.input | convertfrom-json).properties
+    foreach ($prop in get-member -InputObject $body -MemberType noteproperty){
+        switch ("$($body.($prop.name).type)"){
+            "string"{[string]$body.($prop.name)=$request.($prop.name)}
+            default{$body.($prop.name)=$request.($prop.name)}
+        }
+    }
+    $response=Invoke-RestMethod -Method post -Uri $attributeschema.url -Body ($body | convertto-json)
+    $output=get-member -InputObject ($attributeschema.output | convertfrom-json).properties -MemberType noteproperty
+    return $response.($output.name)
+}
+function Test-BasicAuthCred($Authorization){
+    write-host $Authorization
+    if ($env:basicauth){
+        write-host "$($env:basicauth)"
+        $basicauthsettings="$($env:basicauth)".Split(';') | foreach-object{$_ | ConvertFrom-Stringdata}
+        if ($basicauthsettings.enabled -eq 'true'){
+            write-host "checking credentials $($Authorization | convertto-json)-"
+            if ($Authorization -like "Basic *"){
+                $hash=$Authorization.replace('Basic ','')
+                write-host "hash $hash"
+            }else{
+                write-host "not using Basic auth"
+                return new-scimError -status 401 -detail "failed basic auth:not using basic auth"
+            }
+            try{
+                $bytes=[convert]::frombase64string($hash)
+                $creds=[System.Text.Encoding]::utf8.Getstring($bytes).split(':')
+                write-host "recieved $([System.Text.Encoding]::utf8.Getstring($bytes))"
+                if ($creds[0] -eq $basicauthsettings.client_id -and $creds[1] -eq $basicauthsettings.client_secret){
+                    return $null
+                }
+            }
+            catch{return new-scimError -status 401 -detail "failed basic auth: problem reading credential"}
+        }else{
+            return $null
+        }
+    }
+    return new-scimError -status 401 -detail "failed basic auth"
 }
