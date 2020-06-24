@@ -543,7 +543,7 @@ function new-scimListResponse{
         [int]$totalresults=$null
     )
     $listresponse=[pscustomobject]@{
-        schema=@('urn:ietf:params:scim:api:messages:2.0:ListResponse')
+        schemas=@('urn:ietf:params:scim:api:messages:2.0:ListResponse')
         totalResults=0
         itemsPerPage=0
         startIndex=0
