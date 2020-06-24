@@ -43,7 +43,8 @@ if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListRespo
   write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)")"
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/Users/$($response.name)" 
 }elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
-  $status = [HttpStatusCode]::($response.status)
+  $code=$response.status
+  $status = [HttpStatusCode]::$code
 }
 
 write-host ($status | convertto-json -depth 10) 
