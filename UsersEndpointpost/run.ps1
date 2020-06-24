@@ -22,10 +22,12 @@ for removing resources#>
 # Write to the Azure Functions log stream.
 
 $status = [HttpStatusCode]::OK
-$params=@{
-    request=$request.body
+if ($request.Params.path -eq $null){
+    $params=@{
+        request=$request.body
+    }
+    $response=new-scimUser @params
 }
-$response=new-scimUser @params
 #$response.meta.location="https://$($Request.Headers.'disguised-host')/api/ServiceProviderConfig"
 
 write-host ($status | convertto-json -depth 10) 
