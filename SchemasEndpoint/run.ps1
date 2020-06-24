@@ -22,6 +22,8 @@ if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListRespo
     write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.name)")"
     $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.name)"
   }
+}elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
+  $status = [HttpStatusCode]::($response.status)
 }else{
   write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.name)")"
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/schemas/$($response.name)" 

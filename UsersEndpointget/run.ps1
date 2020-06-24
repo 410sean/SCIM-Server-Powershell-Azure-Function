@@ -39,9 +39,11 @@ if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListRespo
     write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)")"
     $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)"
   }
-}else{
+}elseif($response.schemas -contains 'urn:ietf:params:scim:schemas:core:2.0:User'){
   write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)")"
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/Users/$($response.name)" 
+}elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
+  $status = [HttpStatusCode]::($response.status)
 }
 
 write-host ($status | convertto-json -depth 10) 

@@ -29,7 +29,9 @@ if ($request.Params.path -eq $null){
     $response=new-scimUser @params
 }
 #$response.meta.location="https://$($Request.Headers.'disguised-host')/api/ServiceProviderConfig"
-
+if($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
+    $status = [HttpStatusCode]::($response.status)
+}
 write-host ($status | convertto-json -depth 10) 
 write-host ($psbody | convertto-json -depth 10) 
 # Associate values to output bindings by calling 'Push-OutputBinding'.

@@ -23,10 +23,13 @@ if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListRespo
     write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)")"
     $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)"
   }
+}elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
+  $status = [HttpStatusCode]::($response.status)
 }else{
   write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)")"
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.name)" 
 }
+
 
 write-host ($status | convertto-json -depth 10) 
 write-host ($psbody | convertto-json -depth 10) 
