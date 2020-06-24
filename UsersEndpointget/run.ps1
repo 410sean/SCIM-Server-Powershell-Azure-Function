@@ -21,7 +21,7 @@ within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 
-$status = [HttpStatusCode]::OK
+$status = [HttpStatusCode]::200
 #get response code
 $params=@{
     startindex=$request.query.startindex
