@@ -22,6 +22,7 @@ for removing resources#>
 # Write to the Azure Functions log stream.
 
 $status = [HttpStatusCode]::OK
+#get response code
 $params=@{
     startindex=$request.query.startindex
     itemsPerPage=$request.query.itemsPerPage
@@ -30,13 +31,17 @@ $params=@{
     path=$request.query.path
 }
 $response=get-scimUser @params
+
+#set meta location scriptlet
 if ($response.schema -contains 'urn:ietf:params:scim:api:messages:2.0:ListResponse')
 {
   foreach ($resource in $response.resources){
-    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)"
+    write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)")"
+    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)"
   }
 }else{
-  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.name)" 
+  write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)")"
+  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/Users/$($response.name)" 
 }
 
 write-host ($status | convertto-json -depth 10) 

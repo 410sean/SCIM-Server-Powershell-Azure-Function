@@ -8,16 +8,24 @@ write-host ($TriggerMetadata | convertto-json -depth 10)
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 $status = [HttpStatusCode]::OK
+#get response code
 if ($Request.params.path){
   $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:Schema' -path $Request.params.path
-  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/Schemas/$($response.name)"  
 }else{
   $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:Schema'
-  foreach ($resource in $response.resources){
-    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/Schemas/$($resource.name)"
-  }
 } 
 
+#set meta location scriptlet
+if ($response.schema -contains 'urn:ietf:params:scim:api:messages:2.0:ListResponse')
+{
+  foreach ($resource in $response.resources){
+    write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.name)")"
+    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.name)"
+  }
+}else{
+  write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.name)")"
+  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/schemas/$($response.name)" 
+}
 
 write-host ($status | convertto-json -depth 10) 
 write-host ($psbody | convertto-json -depth 10) 

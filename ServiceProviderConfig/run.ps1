@@ -8,7 +8,10 @@ write-host ($TriggerMetadata | convertto-json -depth 10)
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 $status = [HttpStatusCode]::OK
+#get response code
 $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig'
+
+#set meta location
 $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ServiceProviderConfig"
 
 write-host ($status | convertto-json -depth 10) 
