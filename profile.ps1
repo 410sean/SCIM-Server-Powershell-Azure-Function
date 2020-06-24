@@ -393,6 +393,38 @@ function TestAzTableEmptyKeys
 
 function ExecuteQueryAsync
 {
+    <#
+    .SYNOPSIS
+        Takes a table and query object and performs an action on an azure table
+
+
+    .PARAMETER Table
+        (required) the cloud table type including auth information
+
+    .PARAMETER TableQuery
+        (required) pass this parameter an object type "Microsoft.Azure.Cosmos.Table.TableQuery" 
+
+    .PARAMETER token
+        optionally provide token to allow resuming query
+
+    .PARAMETER returnToken
+        switch parameter when set will return the token, useful when takecount is set in the tableQuery causing it to not get all results
+
+    .EXAMPLE
+        $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+        $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+        $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
+        $TableQuery.FilterString="RowKey eq '$path'"
+        $rows=GetPSObjectFromEntity(ExecuteQueryAsync -Table $table.CloudTable -TableQuery $TableQuery)
+
+    .LINK
+        https://www.powershellgallery.com/packages/AzureRmStorageTable/2.0.3
+    
+    .LINK
+        https://www.powershellgallery.com/packages/AzTable/2.0.3
+
+
+    #>
     param
     (
         [Parameter(Mandatory=$true)]
@@ -516,6 +548,26 @@ function Add-AzTableRow
 }
 
 function new-scimError{
+    <#
+    .SYNOPSIS
+        returns SCIM 2.0 error response based on variables    
+
+    .PARAMETER status
+        (required) http status code of the response which indicates the type of error
+
+    .PARAMETER scimType
+        (optional) when there is a problem with the request then use this to specify the error type
+
+    .PARAMETER detail
+        string field to allow explanation of the error
+
+    .EXAMPLE
+        new-scimError -status 404 -detail "Resorce Type '$path' not found"
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.12
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -536,6 +588,26 @@ function new-scimError{
     return $errorResponse
 }
 function new-scimListResponse{
+    <#
+    .SYNOPSIS
+        returns SCIM 2.0 ListResponse response based on variables    
+
+    .PARAMETER resources
+        (required) scim resources which are to be returned by this list response
+
+    .PARAMETER totalresults
+        (optional) when returning partial results, provide the total count of results
+
+    .EXAMPLE
+        $response=new-scimListResponse -resources $resourcetypes
+
+    .EXAMPLE
+        $response=new-scimListResponse -resources $rows[$start..$finish] -totalResults $rows.count
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.4.2
+    
+    #>
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $resources,
@@ -559,12 +631,55 @@ function new-scimListResponse{
     return $listresponse
 }
 function get-scimServiceProviderConfig {
+    <#
+    .SYNOPSIS
+        handles response to get request on /serviceproviderconfig endpoint
+    
+    .DESCRIPTION
+        returns SCIM 2.0 service Proider config response
+    
+    .EXAMPLE
+        get-scimServiceProviderConfig
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-5
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.5
+    
+    #>
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
     $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'ServiceProviderConfig'
     return ($rows.json | convertfrom-json)
 }
-function get-scimResourceTypes ($path) {
+function get-scimResourceTypes  {
+     <#
+    .SYNOPSIS
+        handles get operation on /ResourceTypes endpoint
+
+    .DESCRIPTION
+        returns SCIM 2.0 ResourceTypes response 
+        returns all ResourceTypes in a listResponse or a single ResourceType if $path is specified
+
+    .PARAMETER path
+        (optional) path at the end of the URL if requested
+
+    .EXAMPLE
+        $response=get-scimResourceTypes
+
+    .EXAMPLE
+        $response=get-scimResourceTypes -path 'User'
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-6
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.6
+    
+    #>
+    [cmdletbinding()]
+    param($path)
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
     if ($path){
@@ -581,7 +696,33 @@ function get-scimResourceTypes ($path) {
     }
     return ($response)
 }
-function get-scimSchema ($path) {
+function get-scimSchema {
+    <#
+    .SYNOPSIS
+        handles get request to /schemas endpoint
+
+    .DESCRIPTION
+        returns SCIM 2.0 Schema response 
+        returns all Schemas in a listResponse or a single Schema if $path is specified
+
+    .PARAMETER path
+        (optional) path at the end of the URL if requested
+
+    .EXAMPLE
+        $response=get-scimSchema
+
+    .EXAMPLE
+        $response=get-scimSchema -path "urn:ietf:params:scim:schemas:core:2.0:User"
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-7
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.7
+    
+    #>
+    [cmdletbinding()]
+    param($path)
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
     if ($path){
@@ -604,6 +745,26 @@ function get-scimSchema ($path) {
 }
 
 function new-scimItemUser{
+    <#
+    .SYNOPSIS
+         converts user from azure table to SCIM 2.0
+
+    .DESCRIPTION
+        correctly formats user from azure table into SCIM 2.0 format needed for response based on schema
+
+    .PARAMETER user
+        (required) a single user details from azure table
+
+    .EXAMPLE
+        $scimusers+=new-scimItemUser -user $row
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -621,6 +782,42 @@ function new-scimItemUser{
     return $scimuser
 }
 function get-scimUser {
+    <#
+    .SYNOPSIS
+         handles /Users endpoint with get method
+
+    .DESCRIPTION
+        produces response for a get operation on the /Users endpoint handling optional path and queries
+
+    .PARAMETER startIndex
+        integer, used when producing a list response of user to specify where to start
+
+    .PARAMETER itemsPerPage
+        integer, used when producing a list response of user to specify how many users to return
+        if value is null or exceeds serviceproviderconfig's filter.maxResults then we will use server setting
+
+    .PARAMETER attributes
+        string, when provided specifies if a reduced set of attributes should be returned in the response
+        default will return entire user attribute set
+
+    .PARAMETER filter
+        string, when provided it will return a listresponse of user results that match the filter
+        default is null and will return all users
+    
+    .PARAMETER path
+        string, guid, when provided the path should include a single user's ID and return just that user if found
+        providing this property is the only way we do not respond with a listresponse
+    
+    .EXAMPLE
+        $response=get-scimUser
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
@@ -675,6 +872,30 @@ function get-scimUser {
     return ($response)     
 }
 function get-scimSchemaAttributes {
+    <#
+    .SYNOPSIS
+        returns schema's attributes
+
+    .DESCRIPTION
+        produces response for a get operation on the /Users endpoint handling optional path and queries
+
+    .PARAMETER schema
+        (required) string, will return the schema attributes that match the requested schema
+
+    .PARAMETER tableObjects
+        switch, when set this will return additional information making it NOT compliant with scim 2.0 
+        provided information necessary to populate rest attributes
+   
+    .EXAMPLE
+        $response=get-scimUser
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -694,6 +915,23 @@ function get-scimSchemaAttributes {
     }
 }
 function get-ScimItem {
+    <#
+    .SYNOPSIS
+        SCIM 2.0 data resources
+
+    .DESCRIPTION
+        produces valid data resources and server-related objects for SCIM Schema URIs
+
+    .LINK
+        https://www.iana.org/assignments/scim/scim.xhtml
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7644
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -743,7 +981,32 @@ function get-ScimItem {
 #    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'User' -RowKey $path
 #}
 
-function update-scimuserput ($request,$method) {
+function update-scimuserput {
+    <#
+    .SYNOPSIS
+         handles /Users endpoint with put method
+
+    .DESCRIPTION
+        will attempt to update user specified in put and respond with updated user
+    
+    .PARAMETER request
+        (Required) psobject, the request body with attribute changes
+
+    .PARAMETER path
+        (Required) string, guid, the user's id as passed via the url path
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.5.1
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
+    [cmdletbinding()]
+    param($request,$path)
     $schema=get-scimSchemaAttributes -schema 'urn:ietf:params:scim:schemas:core:2.0:User' -tableObjects
     $guid=$request.id
     $user=get-scimuser -path $guid
@@ -777,7 +1040,29 @@ function update-scimuserput ($request,$method) {
     return $newuser
 }
 
-function new-scimuser ($request) {
+function new-scimuser {
+    <#
+    .SYNOPSIS
+         handles /Users endpoint with post method
+
+    .DESCRIPTION
+        will create a new user based on body of post request
+    
+    .PARAMETER request
+        (Required) psobject, the request body with new user details
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.3
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
+    [cmdletbinding()]
+    param($request)
     $schema=get-scimSchemaAttributes -schema 'urn:ietf:params:scim:schemas:core:2.0:User' -tableObjects
     $guid=(new-guid).guid
     $scimuser=@{
@@ -835,6 +1120,30 @@ function test-scimuserconstraintUniqueness {
 }
 
 function test-scimuserconstraintRequired {
+    <#
+    .SYNOPSIS
+        on create or update, will checks for attribute constraint required
+
+    .DESCRIPTION
+        on create or update this will check if an attribute is required 
+        and if so it will then check if it was provided
+    
+    .PARAMETER attributeschema
+        (Required) psobject, the attribute schema properties for the attribute we are checking
+
+    .PARAMETER value
+        value of attribute in create/update request
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.3
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -847,6 +1156,29 @@ function test-scimuserconstraintRequired {
 }
 
 function test-scimuserconstraintMutability {
+    <#
+    .SYNOPSIS
+        on create or update, will checks for attribute constraint mutability
+
+    .DESCRIPTION
+        on create or update this will check if an attribute has mutability that is writeable 
+    
+    .PARAMETER attributeschema
+        (Required) psobject, the attribute schema properties for the attribute we are checking
+
+    .PARAMETER value
+        value of attribute in create/update request
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.3
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -859,6 +1191,29 @@ function test-scimuserconstraintMutability {
 }
 
 function test-scimuserconstraintType {
+    <#
+    .SYNOPSIS
+        on create or update, will checks for attribute constraint type
+
+    .DESCRIPTION
+        on create or update this will check if an attribute is a value that can become the appropriate type 
+    
+    .PARAMETER attributeschema
+        (Required) psobject, the attribute schema properties for the attribute we are checking
+
+    .PARAMETER value
+        value of attribute in create/update request
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.3
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -870,6 +1225,23 @@ function test-scimuserconstraintType {
 }   
 
 function get-scimRestAttribute {
+    <#
+    .SYNOPSIS
+        fills in attributes configured as rest attributes
+
+    .DESCRIPTION
+        on create or update when the attribute is configured as a rest attribute this will query a rest endpoint like azure logic apps
+        it will pull the needed values for creating a json input
+        make a post request to the url with the input json
+        and from the response extract and return the value from the output json to be assigned to the user
+    
+    .PARAMETER attributeschema
+        (Required) psobject, the attribute schema properties for the attribute we are checking
+
+    .PARAMETER request
+        all values of the user in create/update request
+    
+    #>
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -888,7 +1260,42 @@ function get-scimRestAttribute {
     $output=get-member -InputObject ($attributeschema.output | convertfrom-json).properties -MemberType noteproperty
     return $response.($output.name)
 }
-function Test-BasicAuthCred($Authorization){
+function Test-BasicAuthCred{
+    <#
+    .SYNOPSIS
+        check for basic auth
+
+    .DESCRIPTION
+        for select endpoints they can call this function with the authorization header to have basic auth validated
+        it will be considered succesful if authorization matches $env:basicauth 
+        or $env:basicauth is not properly configured for basic auth
+        on a failure a scim error will br returned
+    
+    .PARAMETER Authorization
+        (Required) string, the attribute schema properties for the attribute we are checking
+
+    .PARAMETER value
+        value of attribute in create/update request
+
+    .EXAMPLE
+        $body=Test-BasicAuthCred -authorization ($request.Headers.Authorization)
+        if ($null -ne $body){
+            Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+                StatusCode = [HttpStatusCode]::Unauthorized
+                Body = $body
+                headers = @{"Content-Type"= "application/scim+json"}
+            })
+        }
+
+    .LINK
+        https://tools.ietf.org/html/rfc7617
+    
+    #>
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Authorization
+    )
     write-host $Authorization
     if ($env:basicauth){
         write-host "$($env:basicauth)"
