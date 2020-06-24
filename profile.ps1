@@ -618,7 +618,7 @@ function new-scimListResponse{
         schemas=@('urn:ietf:params:scim:api:messages:2.0:ListResponse')
         totalResults=0
         itemsPerPage=0
-        startIndex=0
+        startIndex=1
         Resources=@()      
     }
     #$json=test-json $resources

@@ -33,7 +33,7 @@ $params=@{
 $response=get-scimUser @params
 
 #set meta location scriptlet
-if ($response.schema -contains 'urn:ietf:params:scim:api:messages:2.0:ListResponse')
+if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListResponse')
 {
   foreach ($resource in $response.resources){
     write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.name)")"
