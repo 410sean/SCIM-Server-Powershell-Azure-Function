@@ -20,14 +20,14 @@ if ($Request.params.path){
 if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListResponse')
 {
   foreach ($resource in $response.resources){
-    write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)")"
-    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)"
+    write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.id)")"
+    $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.id)"
   }
 }elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
   $status = [HttpStatusCode]::($response.status)
 }else{
-  write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)")"
-  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.name)" 
+  write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.id)")"
+  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.id)" 
 }
 
 
