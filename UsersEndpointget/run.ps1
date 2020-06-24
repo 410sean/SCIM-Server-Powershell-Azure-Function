@@ -25,10 +25,10 @@ $status = [HttpStatusCode]::OK
 #get response code
 $params=@{
     startindex=$request.query.startindex
-    itemsPerPage=$request.query.itemsPerPage
+    itemsPerPage=$request.query.count
     attributes=$request.query.attributes
     filter=$request.query.filter
-    path=$request.query.path
+    path=$request.Params.path
 }
 $response=get-scimUser @params
 
