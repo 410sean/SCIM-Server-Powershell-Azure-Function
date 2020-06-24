@@ -10,14 +10,17 @@ Write-Host "PowerShell HTTP trigger function processed a request."
 $status = [HttpStatusCode]::OK
 if ($Request.params.path){
   $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:ResourceType' -path $Request.params.path
-  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.name)"  
 }else{
   $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:ResourceType'
+} 
+if ($response.schema -contains 'urn:ietf:params:scim:api:messages:2.0:ListResponse')
+{
   foreach ($resource in $response.resources){
     $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($resource.name)"
   }
-} 
-
+}else{
+  $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ResourceTypes/$($response.name)" 
+}
 
 write-host ($status | convertto-json -depth 10) 
 write-host ($psbody | convertto-json -depth 10) 
