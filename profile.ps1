@@ -864,8 +864,10 @@ function get-scimUser {
     $start=$startindex-1
     $finish=$start+[int]$itemsPerPage-1
     $finish=(@($finish,$rows.count) | measure-object -minimum).minimum
-    ForEach ($resource in $rows[$start..$finish]){
-        $scimusers+=$resource | new-scimItemUser
+    if ($rows -ne $null){
+        ForEach ($resource in $rows[$start..$finish]){
+            $scimusers+=$resource | new-scimItemUser
+        }
     }
     $response=new-scimListResponse -resources $scimusers -totalResults $rows.count
     $response.startIndex=$startIndex
@@ -1116,7 +1118,9 @@ function test-scimuserconstraintUniqueness {
         $value
     )
     if ($attributeschema.json.uniqueness -in @('none',$null)){return $null}
-    return $null
+    $test=get-scimUser -filter "$($attribute.json.name) eq '$value'"
+    if ($test.itemsPerPage -eq 0){return $null}
+    return new-scimError -status 409 -scimtype uniqueness -detail "The value for $($attribute.json.name) is required to be unique. '$value' already exists"
 }
 
 function test-scimuserconstraintRequired {
@@ -1151,7 +1155,9 @@ function test-scimuserconstraintRequired {
         [Parameter(Mandatory = $false)]
         $value
     )
-    if ($attributeschema.json.required -in @('False',$null)){return $null}
+    if ($attributeschema.json.required){
+
+    }
     return $null
 }
 
