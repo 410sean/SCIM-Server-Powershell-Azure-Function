@@ -22,8 +22,11 @@ within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 if ($keepgoing){
-$response=remove-scimUser -path $request.Params.path
-
+if ($request.Params.path -notmatch "(?im)^[{(]?[0-9A-F]{8}[-]?(?:[0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$"){
+    $response=new-scimError -status 400 -detail "the path '$path' for removal was not a valid guid"
+}else{
+    $response=remove-scimUser -path $request.Params.path
+}
 #set meta location scriptlet
 if($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){  
   $status=get-HttpStatusCode -code $response.status
