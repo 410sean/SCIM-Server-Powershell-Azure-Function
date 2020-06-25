@@ -1106,7 +1106,42 @@ function new-scimuser {
     $newuser=get-scimUser -path $guid
     return $newuser
 }
+function Remove-scimUser {
+    <#
+    .SYNOPSIS
+         handles /Users endpoint with delete method
 
+    .DESCRIPTION
+        will remove a user based on path of delete request
+    
+    .PARAMETER path
+        (Required) string, guid, the path of the url following the /Users endpoint which specifies a user guid
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.6
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string]$path
+        )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+    if (Get-AzTableRow -Table $Table.CloudTable -PartitionKey 'User' -RowKey $path){
+        $results=Remove-AzTableRow -Table $Table.CloudTable -PartitionKey 'User' -RowKey $path
+    }else{
+        return new-scimError -status 404 -detail "unable to find user id '$path' for removal"
+    }
+    return  $results      
+
+}
 #test-scimuserconstraint will return a scim error if a bad input is found (#TODO)
 
 function test-scimuserconstraintUniqueness {
