@@ -1298,7 +1298,7 @@ function get-scimRestAttribute {
             default{$body.($prop.name)=$request.($prop.name)}
         }
     }
-    $response=Invoke-RestMethod -Method post -Uri $attributeschema.url -Body ($body | convertto-json)
+    $response=Invoke-RestMethod -Method post -Uri $attributeschema.url -Body ($body | convertto-json) -ContentType 'application/json'
     $output=get-member -InputObject ($attributeschema.output | convertfrom-json).properties -MemberType noteproperty
     return $response.($output.name)
 }
