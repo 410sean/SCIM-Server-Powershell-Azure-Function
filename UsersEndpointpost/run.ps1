@@ -23,6 +23,10 @@ for removing resources#>
 
 $status = [HttpStatusCode]::OK
 if ($request.Params.path -eq $null){
+    $peap=$erroractionpreference
+    $erroractionpreference='continue'
+    if (test-json $request.body){$request.body=$Request.body | convertfrom-json -depth 10}
+    $erroractionpreference=$peap
     $params=@{
         request=$request.body
     }
