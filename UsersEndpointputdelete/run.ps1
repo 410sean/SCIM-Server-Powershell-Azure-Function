@@ -6,6 +6,7 @@ write-host ($request | convertto-json -depth 10)
 write-host ($TriggerMetadata | convertto-json -depth 10) 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
+$keepgoing=$true
 $body=Test-BasicAuthCred -authorization ($request.Headers.Authorization)
 if ($null -ne $body){
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
@@ -20,11 +21,8 @@ searching, and bulk modification; PUT for attribute replacement
 within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
-
-$params=@{
-    path=$request.Params.path
-}
-$response=remove-scimUser @params
+if ($keepgoing){
+$response=remove-scimUser -path $request.Params.path
 
 #set meta location scriptlet
 if($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){  
@@ -42,3 +40,4 @@ Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     Body = $response | convertto-json -Depth 10
     headers = @{"Content-Type"= "application/scim+json"}
 })
+}
