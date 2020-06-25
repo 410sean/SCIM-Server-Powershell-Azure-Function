@@ -1113,14 +1113,16 @@ function test-scimuserconstraintUniqueness {
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$attributeschema,
+        $attributeschema,
         [Parameter(Mandatory = $false)]
         $value
     )
     if ($attributeschema.json.uniqueness -in @('none',$null)){return $null}
-    $test=get-scimUser -filter "$($attribute.json.name) eq '$value'"
-    if ($test.itemsPerPage -eq 0){return $null}
-    return new-scimError -status 409 -scimtype uniqueness -detail "The value for $($attribute.json.name) is required to be unique. '$value' already exists"
+    $filter="$($attributeschema.json.name) eq '$value'"
+    Write-Verbose "checking $filter"
+    $test=get-scimUser -filter $filter
+    if ($test.itemsPerPage -gt 0){return new-scimError -status 409 -scimtype uniqueness -detail "The value for $($attribute.json.name) is required to be unique. '$value' already exists"}
+    return $false
 }
 
 function test-scimuserconstraintRequired {
@@ -1151,14 +1153,13 @@ function test-scimuserconstraintRequired {
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$attributeschema,
+        $attributeschema,
         [Parameter(Mandatory = $false)]
         $value
     )
-    if ($attributeschema.json.required){
-
-    }
-    return $null
+    if ($attributeschema.json.required -in @('False',$null)){return $false}
+    if ($null -eq $value){return new-scimError -status 400 -scimtype invalidValue -detail "A required value was missing for $($attributeschema.RowKey)"}
+    return $false
 }
 
 function test-scimuserconstraintMutability {
@@ -1188,7 +1189,7 @@ function test-scimuserconstraintMutability {
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$attributeschema,
+        $attributeschema,
         [Parameter(Mandatory = $false)]
         $value
     )
@@ -1223,7 +1224,7 @@ function test-scimuserconstraintType {
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$attributeschema,
+        $attributeschema,
         [Parameter(Mandatory = $false)]
         $value
     )
