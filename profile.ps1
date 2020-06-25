@@ -1064,15 +1064,15 @@ function new-scimuser {
     
     #>
     [cmdletbinding()]
-    param($request)
+    param([Parameter(Mandatory = $true, ValueFromPipeline = $true)]$request)
     $schema=get-scimSchemaAttributes -schema 'urn:ietf:params:scim:schemas:core:2.0:User' -tableObjects
     $guid=(new-guid).guid
     $scimuser=@{
         PartitionKey='User'
         RowKey=$guid
     }
-    foreach($attribute in $schema){
-        $response=test-scimuserconstraintUniqueness -attributeschema $attribute -value $request.($attribute.rowkey)
+    foreach($attribute in $schema.where{$_.rowkey -ne 'id'}){
+        $response=test-scimuserconstraintUniqueness -attributeschema $attribute -value ($request.($attribute.rowkey))
         if ($response){return $response}
         $response=test-scimuserconstraintRequired -attributeschema $attribute -value $request.($attribute.rowkey)
         if ($response){return $response}
@@ -1102,7 +1102,7 @@ function new-scimuser {
     } | convertto-json
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'User'
-    Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $scimuser
+    $result=Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $scimuser
     $newuser=get-scimUser -path $guid
     return $newuser
 }
