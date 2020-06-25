@@ -34,8 +34,8 @@ if($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
 }else {
     $status = get-HttpStatusCode -code 201
 }
-write-host ($status | convertto-json -depth 10) 
-write-host ($psbody | convertto-json -depth 10) 
+write-host "status:$($status | convertto-json -depth 10)"
+write-host "Response:$($response | convertto-json -depth 10)"
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
