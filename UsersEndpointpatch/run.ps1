@@ -30,7 +30,7 @@ foreach ($op in $patchop.Operations){
 $timestamp=(get-date).ToUniversalTime().getdatetimeformats()[101]
 $scimuser.meta=@{
     resourceType='User'
-    created = $timestamp
+    created = $scimuser.meta.created
     lastModified = $timestamp
     location="https://$($Request.Headers.'disguised-host')/api/Users/$($scimuser.id)"
 } | convertto-json
