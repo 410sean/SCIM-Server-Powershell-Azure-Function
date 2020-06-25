@@ -25,10 +25,14 @@ $status = [HttpStatusCode]::OK
 if ($request.Params.path -eq $null){
     $peap=$erroractionpreference
     $erroractionpreference='continue'
-    if (test-json $request.body){$request.body=$Request.body | convertfrom-json -depth 10}
+    if (test-json $request.body){
+        $body=$Request.body | convertfrom-json -depth 10
+    }else{
+        $body=$Request.Body
+    }
     $erroractionpreference=$peap
     $params=@{
-        request=$request.body
+        request=$body
     }
     $response=new-scimUser @params
 }
