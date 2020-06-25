@@ -21,7 +21,7 @@ within resources; PATCH for partial update of attributes; and DELETE
 for removing resources#>
 # Write to the Azure Functions log stream.
 
-$status = [HttpStatusCode]::200
+$status = get-HttpStatusCode -code 200
 #get response code
 $params=@{
     startindex=$request.query.startindex
@@ -42,13 +42,12 @@ if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListRespo
 }elseif($response.schemas -contains 'urn:ietf:params:scim:schemas:core:2.0:User'){
   write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/Users/$($resource.id)")"
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/Users/$($response.id)" 
-}elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
-  $code=$response.status
-  $status = [HttpStatusCode]::$code
+}elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){  
+  $status=get-HttpStatusCode -code $response.status
 }
 
-write-host ($status | convertto-json -depth 10) 
-write-host ($psbody | convertto-json -depth 10) 
+write-host "status:$($status | convertto-json -depth 10)"
+write-host "Response:$($response | convertto-json -depth 10)"
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status

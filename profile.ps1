@@ -1330,3 +1330,92 @@ function Test-BasicAuthCred{
     }
     return new-scimError -status 401 -detail "failed basic auth"
 }
+
+function get-HttpStatusCode {
+    <#
+    .SYNOPSIS
+        convert http status code number into [System.Net.HttpStatusCode]
+    
+    .PARAMETER code
+        (Required) integer
+
+    .EXAMPLE
+        $status=get-HttpStatusCode -code 200
+
+    .LINK
+        https://docs.microsoft.com/en-us/dotnet/api/system.net.httpstatuscode?view=netcore-3.1
+
+    .LINK
+        https://tools.ietf.org/html/rfc2616
+
+    #>
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$code
+    )
+    switch ($code){
+        100{$httpstatus=[System.Net.HttpStatusCode]::Continue}
+        101{$httpstatus=[System.Net.HttpStatusCode]::SwitchingProtocols}
+        102{$httpstatus=[System.Net.HttpStatusCode]::Processing}
+        103{$httpstatus=[System.Net.HttpStatusCode]::EarlyHints}
+        200{$httpstatus=[System.Net.HttpStatusCode]::OK}
+        201{$httpstatus=[System.Net.HttpStatusCode]::Created}
+        202{$httpstatus=[System.Net.HttpStatusCode]::Accepted}
+        203{$httpstatus=[System.Net.HttpStatusCode]::NonAuthoritativeInformation}
+        204{$httpstatus=[System.Net.HttpStatusCode]::NoContent}
+        205{$httpstatus=[System.Net.HttpStatusCode]::ResetContent}
+        206{$httpstatus=[System.Net.HttpStatusCode]::PartialContent}
+        207{$httpstatus=[System.Net.HttpStatusCode]::MultiStatus}
+        208{$httpstatus=[System.Net.HttpStatusCode]::MultiStatus}
+        226{$httpstatus=[System.Net.HttpStatusCode]::IMUsed}
+        300{$httpstatus=[System.Net.HttpStatusCode]::Ambiguous;Write-Warning "http status code 300, returning 'Ambiguous' but possibly could be 'MultipleChoices'"}
+        301{$httpstatus=[System.Net.HttpStatusCode]::Moved;Write-Warning "http status code 301, returning 'Moved' but possibly could be 'MovedPermanently'"}
+        302{$httpstatus=[System.Net.HttpStatusCode]::Redirect;Write-Warning "http status code 302, returning 'Redirect' but possibly could be 'Found'"}
+        303{$httpstatus=[System.Net.HttpStatusCode]::RedirectMethod;Write-Warning "http status code 303, returning 'RedirectMethod' but possibly could be 'SeeOther'"}
+        304{$httpstatus=[System.Net.HttpStatusCode]::NotModified}
+        305{$httpstatus=[System.Net.HttpStatusCode]::UseProxy}
+        306{$httpstatus=[System.Net.HttpStatusCode]::Unused}
+        307{$httpstatus=[System.Net.HttpStatusCode]::TemporaryRedirect;Write-Warning "http status code 307, returning 'TemporaryRedirect' but possibly could be 'RedirectKeepVerb'"}
+        308{$httpstatus=[System.Net.HttpStatusCode]::PermanentRedirect}
+        400{$httpstatus=[System.Net.HttpStatusCode]::BadRequest}
+        401{$httpstatus=[System.Net.HttpStatusCode]::Unauthorized}
+        402{$httpstatus=[System.Net.HttpStatusCode]::PaymentRequired}
+        403{$httpstatus=[System.Net.HttpStatusCode]::Forbidden}
+        404{$httpstatus=[System.Net.HttpStatusCode]::NotFound}
+        405{$httpstatus=[System.Net.HttpStatusCode]::MethodNotAllowed}
+        406{$httpstatus=[System.Net.HttpStatusCode]::NotAcceptable}
+        407{$httpstatus=[System.Net.HttpStatusCode]::ProxyAuthenticationRequired}
+        408{$httpstatus=[System.Net.HttpStatusCode]::RequestTimeout}
+        409{$httpstatus=[System.Net.HttpStatusCode]::Conflict}
+        410{$httpstatus=[System.Net.HttpStatusCode]::Gone}
+        411{$httpstatus=[System.Net.HttpStatusCode]::LengthRequired}
+        412{$httpstatus=[System.Net.HttpStatusCode]::PreconditionFailed}
+        413{$httpstatus=[System.Net.HttpStatusCode]::RequestEntityTooLarge}
+        414{$httpstatus=[System.Net.HttpStatusCode]::RequestUriTooLong}
+        415{$httpstatus=[System.Net.HttpStatusCode]::UnsupportedMediaType}
+        416{$httpstatus=[System.Net.HttpStatusCode]::RequestedRangeNotSatisfiable}
+        417{$httpstatus=[System.Net.HttpStatusCode]::ExpectationFailed}
+        421{$httpstatus=[System.Net.HttpStatusCode]::MisdirectedRequest}
+        422{$httpstatus=[System.Net.HttpStatusCode]::UnprocessableEntity}
+        423{$httpstatus=[System.Net.HttpStatusCode]::Locked}
+        424{$httpstatus=[System.Net.HttpStatusCode]::FailedDependency}
+        426{$httpstatus=[System.Net.HttpStatusCode]::UpgradeRequired}
+        428{$httpstatus=[System.Net.HttpStatusCode]::PreconditionRequired}
+        429{$httpstatus=[System.Net.HttpStatusCode]::TooManyRequests}
+        431{$httpstatus=[System.Net.HttpStatusCode]::RequestHeaderFieldsTooLarge}
+        451{$httpstatus=[System.Net.HttpStatusCode]::UnavailableForLegalReasons}
+        500{$httpstatus=[System.Net.HttpStatusCode]::InternalServerError}
+        501{$httpstatus=[System.Net.HttpStatusCode]::NotImplemented}
+        502{$httpstatus=[System.Net.HttpStatusCode]::BadGateway}
+        503{$httpstatus=[System.Net.HttpStatusCode]::ServiceUnavailable}
+        504{$httpstatus=[System.Net.HttpStatusCode]::GatewayTimeout}
+        505{$httpstatus=[System.Net.HttpStatusCode]::HttpVersionNotSupported}
+        506{$httpstatus=[System.Net.HttpStatusCode]::VariantAlsoNegotiates}
+        507{$httpstatus=[System.Net.HttpStatusCode]::InsufficientStorage}
+        508{$httpstatus=[System.Net.HttpStatusCode]::LoopDetected}
+        510{$httpstatus=[System.Net.HttpStatusCode]::NotExtended}
+        511{$httpstatus=[System.Net.HttpStatusCode]::NetworkAuthenticationRequired}
+    }
+    return $httpstatus
+}

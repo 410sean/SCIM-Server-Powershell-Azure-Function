@@ -30,9 +30,9 @@ if ($request.Params.path -eq $null){
 }
 #$response.meta.location="https://$($Request.Headers.'disguised-host')/api/ServiceProviderConfig"
 if($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
-    $status = [HttpStatusCode]::($response.status)
+    $status = get-HttpStatusCode -code ($response.status)
 }else {
-    $status = [HttpStatusCode]::201
+    $status = get-HttpStatusCode -code 201
 }
 write-host ($status | convertto-json -depth 10) 
 write-host ($psbody | convertto-json -depth 10) 

@@ -23,14 +23,14 @@ if ($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:ListRespo
     $resource.meta.location="https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.id)"
   }
 }elseif($response.schemas -contains 'urn:ietf:params:scim:api:messages:2.0:Error'){
-  $status = [HttpStatusCode]::($response.status)
+  $status = get-HttpStatusCode -code $response.status
 }else{
   write-host "setting '$($response.schemas)' meta location $("https://$($Request.Headers.'disguised-host')/api/schemas/$($resource.id)")"
   $response.meta.location="https://$($Request.Headers.'disguised-host')/api/schemas/$($response.id)" 
 }
 
-write-host ($status | convertto-json -depth 10) 
-write-host ($psbody | convertto-json -depth 10) 
+write-host "status:$($status | convertto-json -depth 10)"
+write-host "Response:$($response | convertto-json -depth 10)"
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status

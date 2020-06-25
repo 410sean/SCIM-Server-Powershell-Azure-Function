@@ -14,8 +14,8 @@ $response=get-scimitem -schemaURI 'urn:ietf:params:scim:schemas:core:2.0:Service
 #set meta location
 $response.meta.location="https://$($Request.Headers.'disguised-host')/api/ServiceProviderConfig"
 
-write-host ($status | convertto-json -depth 10) 
-write-host ($psbody | convertto-json -depth 10) 
+write-host "status:$($status | convertto-json -depth 10)"
+write-host "Response:$($response | convertto-json -depth 10)"
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
