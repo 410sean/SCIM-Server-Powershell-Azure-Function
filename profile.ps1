@@ -409,6 +409,8 @@ function ExecuteQueryAsync
 
     .PARAMETER returnToken
         switch parameter when set will return the token, useful when takecount is set in the tableQuery causing it to not get all results
+    
+    .PARAMETER resultSize
 
     .EXAMPLE
         $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
@@ -434,7 +436,8 @@ function ExecuteQueryAsync
         [Parameter(Mandatory=$false)]
         $token=$null,
         [Parameter(Mandatory=$false)]
-        [switch]$returnToken
+        [switch]$returnToken,
+        $resultSize=$null
     )
     # Internal function
     # Executes query in async mode
@@ -446,8 +449,9 @@ function ExecuteQueryAsync
         {
             $Results = $Table.ExecuteQuerySegmentedAsync($TableQuery, $token)
             $token = $Results.Result.ContinuationToken
+            #write-host $results.id
             $AllRows += $Results.Result.Results
-        } while ($token -and -not $TableQuery.TakeCount)
+        } while ($token -and ($null -eq $resultsize -or $allrows.count -lt $resultSize))
         if ($returnToken){
             return $AllRows,$token
         }else{
@@ -846,30 +850,19 @@ function get-scimUser {
     $serverConfig=[int](get-scimServiceProviderConfig).filter.maxResults
     if ($itemsPerPage -eq 0){$itemsPerPage=$serverConfig}
     [int]$itemsPerPage=(@($serverconfig,$itemsPerPage) | measure-object -Minimum).Minimum
-    $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
-    <#
-    $TableQuery.TakeCount=$startIndex*$itemsPerPage
-    if ($startIndex -eq 1){
-        $token=$null
-    }
-    #>
-    if ($filter){ 
-        $TableQuery.FilterString=$filter
-    }
     if ($attributes)  {
-        $TableQuery.SelectColumns=@($attributes)
+        $selectColumns=New-Object System.Collections.Generic.List[string]
+        $selectColumns.add($attributes)
+        $selectColumns.add('meta')
     }
-    $rows=GetPSObjectFromEntity(ExecuteQueryAsync -Table $table.CloudTable -TableQuery $TableQuery)
+    $rows,$total=get-scimuseraggregation -cloudTable $table.CloudTable -start $startIndex -count $itemsPerPage -TableQueryFilterString $filter -TableQuerySelectColumns $selectColumns
     $scimusers=@()
-    $start=$startindex-1
-    $finish=$start+[int]$itemsPerPage-1
-    $finish=(@($finish,$rows.count) | measure-object -minimum).minimum
-    if ($rows -ne $null){
-        ForEach ($resource in $rows[$start..$finish]){
-            $scimusers+=$resource | new-scimItemUser
+    if ($null -ne $rows){
+        ForEach ($resource in $rows){
+            $scimusers+=((GetPSObjectFromEntity($resource)) | new-scimItemUser)
         }
     }
-    $response=new-scimListResponse -resources $scimusers -totalResults $rows.count
+    $response=new-scimListResponse -resources $scimusers -totalresults $total
     $response.startIndex=$startIndex
     return ($response)     
 }
@@ -1042,6 +1035,42 @@ function update-scimuserput {
     return $newuser
 }
 
+function Remove-scimUser {
+    <#
+    .SYNOPSIS
+         handles /Users endpoint with delete method
+
+    .DESCRIPTION
+        will remove a user based on path of delete request
+    
+    .PARAMETER path
+        (Required) string, guid, the path of the url following the /Users endpoint which specifies a user guid
+
+    .LINK
+        https://tools.ietf.org/html/rfc7644#section-3.6
+
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-4
+    
+    .LINK
+        https://tools.ietf.org/html/rfc7643#section-8.1
+    
+    #>
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string]$path
+        )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+    if ($null -ne (Get-AzTableRow -Table $Table.CloudTable -PartitionKey 'User' -RowKey $path)){
+        $results=Remove-AzTableRow -Table $Table.CloudTable -PartitionKey 'User' -RowKey $path
+    }else{
+        return new-scimError -status 404 -detail "unable to find user id '$path' for removal"
+    }
+    return  $results      
+
+}
 function new-scimuser {
     <#
     .SYNOPSIS
@@ -1106,42 +1135,7 @@ function new-scimuser {
     $newuser=get-scimUser -path $guid
     return $newuser
 }
-function Remove-scimUser {
-    <#
-    .SYNOPSIS
-         handles /Users endpoint with delete method
 
-    .DESCRIPTION
-        will remove a user based on path of delete request
-    
-    .PARAMETER path
-        (Required) string, guid, the path of the url following the /Users endpoint which specifies a user guid
-
-    .LINK
-        https://tools.ietf.org/html/rfc7644#section-3.6
-
-    .LINK
-        https://tools.ietf.org/html/rfc7643#section-4
-    
-    .LINK
-        https://tools.ietf.org/html/rfc7643#section-8.1
-    
-    #>
-    [cmdletbinding()]
-    param(
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string]$path
-        )
-    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
-    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
-    if (Get-AzTableRow -Table $Table.CloudTable -PartitionKey 'User' -RowKey $path){
-        $results=Remove-AzTableRow -Table $Table.CloudTable -PartitionKey 'User' -RowKey $path
-    }else{
-        return new-scimError -status 404 -detail "unable to find user id '$path' for removal"
-    }
-    return  $results      
-
-}
 #test-scimuserconstraint will return a scim error if a bad input is found (#TODO)
 
 function test-scimuserconstraintUniqueness {
@@ -1152,7 +1146,7 @@ function test-scimuserconstraintUniqueness {
         [Parameter(Mandatory = $false)]
         $value
     )
-    if ($attributeschema.json.uniqueness -in @('none',$null)){return $null}
+    if ($attributeschema.json.uniqueness -in @('none',$null)){return $false}
     $filter="$($attributeschema.json.name) eq '$value'"
     Write-Verbose "checking $filter"
     $test=get-scimUser -filter $filter
@@ -1366,7 +1360,6 @@ function Test-BasicAuthCred{
     }
     return new-scimError -status 401 -detail "failed basic auth"
 }
-
 function get-HttpStatusCode {
     <#
     .SYNOPSIS
@@ -1376,7 +1369,7 @@ function get-HttpStatusCode {
         (Required) integer
 
     .EXAMPLE
-        $status=get-HttpStatusCode -code 200
+        $status=get-HttpStatusCode 200
 
     .LINK
         https://docs.microsoft.com/en-us/dotnet/api/system.net.httpstatuscode?view=netcore-3.1
@@ -1455,3 +1448,81 @@ function get-HttpStatusCode {
     }
     return $httpstatus
 }
+function merge-PatchOps {
+    <#
+    .SYNOPSIS
+        apply patch operation to 
+    
+    .PARAMETER originalObject
+        pscustomobject of the object we wish to apply patch operations on.
+    
+    .PARAMETER patchOps
+        pscustomobject (or json) of the opject we wish to apply patch operations to
+
+    .EXAMPLE
+        $updateObject=merge-PatchOps -originalObject $user -patchOps $request.body
+
+    .LINK
+        http://jsonpatch.com/
+
+    .LINK
+        https://tools.ietf.org/html/rfc6902
+
+    #>
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        $originalObject,
+        [Parameter(Mandatory = $true)]
+        $patchOps
+    )
+    $peap=$ErrorActionPreference
+    $ErrorActionPreference='continue'
+    if ($patchOps | Convertfrom-Json -depth 10){$patchops=$patchOps | Convertfrom-Json -depth 10}
+    if ($originalObject | Convertfrom-Json -depth 10){$originalObject=$originalObject | Convertfrom-Json -depth 10}
+    $ErrorActionPreference=$peap
+    foreach ($op in $patchOps){
+        switch($op.op){
+            'add'{"$($op.op) $($op.value)"}
+            'remove'{"$($op.op) $($op.value)"}
+            'replace'{"$($op.op) $($op.value)"}
+            'move'{"$($op.op) $($op.value)"}
+            'copy'{"$($op.op) $($op.value)"}
+            'test'{"$($op.op) $($op.value)"}
+        }
+    }
+}
+
+function get-scimuseraggregation
+ {
+    [cmdletbinding()]
+    param (
+        $cloudTable,
+        [string]$TableQueryFilterString='',
+        $TableQuerySelectColumns=$null,
+        [ValidateScript({$_ -gt 0})]
+        [int]$start=1,
+        [ValidateScript({$_ -gt 0})]
+        [int]$count=200
+    )
+    $tablecache=@($global:tablecache)
+    $tablecache=$tablecache.where{$_.timestamp -ge (get-date).AddMinutes(-15).ToUniversalTime()}
+    $testagg=$tablecache.where{$_.tablequery.filterstring -eq $TableQueryFilterString -and $_.tablequery.selectColumns -eq $TableQuerySelectColumns} | Sort-Object timestamp -desc
+    if ($testagg){
+        $rows=$testagg[0].rows
+    }else{
+        $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
+        $TableQuery.FilterString=$TableQueryFilterString
+        $TableQuery.SelectColumns=$TableQuerySelectColumns
+        $rows=ExecuteQueryAsync -Table $cloudtable -TableQuery $TableQuery
+        $timestamp=(get-date).ToUniversalTime()
+        $tablecache+=[pscustomobject]@{
+            timestamp=$timestamp
+            tableQuery=$TableQuery
+            totalCount=$rows.count
+            rows=$rows
+        }
+        $global:tablecache=$tablecache
+    }
+    return $rows[($start-1)..($start+$count-2)],$rows.count
+ }
