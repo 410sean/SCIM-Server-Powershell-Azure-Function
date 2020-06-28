@@ -1132,6 +1132,7 @@ function new-scimuser {
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'User'
     $result=Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $scimuser
+    $global:tablecache=$null
     $newuser=get-scimUser -path $guid
     return $newuser
 }
