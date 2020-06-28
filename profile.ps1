@@ -1132,7 +1132,7 @@ function new-scimuser {
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'User'
     $result=Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $scimuser
-    #$global:tablecache=$null
+    
     $newuser=get-scimUser -path $guid
     return $newuser
 }
@@ -1506,7 +1506,7 @@ function get-scimuseraggregation
         [ValidateScript({$_ -gt 0})]
         [int]$count=200
     )
-    $tablecache=@()#$global:tablecache)
+    $tablecache=@()
     $tablecache=$tablecache.where{$_.timestamp -ge (get-date).AddMinutes(-15).ToUniversalTime()}
     $testagg=$tablecache.where{$_.tablequery.filterstring -eq $TableQueryFilterString -and $_.tablequery.selectColumns -eq $TableQuerySelectColumns} | Sort-Object timestamp -desc
     if ($testagg){
@@ -1523,7 +1523,7 @@ function get-scimuseraggregation
             totalCount=$rows.count
             rows=$rows
         }
-        #$global:tablecache=$tablecache
+        
     }
     return $rows[($start-1)..($start+$count-2)],$rows.count
  }
