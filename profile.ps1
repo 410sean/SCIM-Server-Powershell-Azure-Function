@@ -1136,7 +1136,6 @@ function new-scimuser {
     $newuser=get-scimUser -path $guid
     return $newuser
 }
-
 #test-scimuserconstraint will return a scim error if a bad input is found (#TODO)
 
 function test-scimuserconstraintUniqueness {
