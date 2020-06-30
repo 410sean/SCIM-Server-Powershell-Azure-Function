@@ -1506,7 +1506,7 @@ function get-scimuseraggregation
         [int]$count=200
     )
     $tablecache=@()
-    $tablecache=@($global:tablecache)
+    $tablecache=import-clixml "$([system.io.path]::gettemppath())tableCache.clixml"
     $tablecache=$tablecache.where{$_.timestamp -ge (get-date).AddMinutes(-15).ToUniversalTime()}
     $testagg=$tablecache.where{$_.tablequery.filterstring -eq $TableQueryFilterString -and $_.tablequery.selectColumns -eq $TableQuerySelectColumns} | Sort-Object timestamp -desc
     if ($testagg){
@@ -1523,7 +1523,7 @@ function get-scimuseraggregation
             totalCount=$rows.count
             rows=$rows
         }
-        $global:tablecache=$tablecache
+        $tablecache | Export-Clixml -Path "$([system.io.path]::gettemppath())tableCache.clixml"
     }
     return $rows[($start-1)..($start+$count-2)],$rows.count
  }
