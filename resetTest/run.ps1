@@ -27,6 +27,6 @@ write-host ($Body | convertto-json -depth 10)
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = Get-HttpStatusCode -code 204
-    Body = ($users | convertto-json)
+    Body = ($users | convertto-json -depth 10)
     headers = @{"Content-Type"= "application/scim+json"}
 })
