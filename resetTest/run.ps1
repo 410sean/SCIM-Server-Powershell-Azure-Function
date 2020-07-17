@@ -14,8 +14,10 @@ if ($null -ne $body){
     $keepgoing=$false
 }
 $users=get-scimUser -filter "PartitionKey eq 'User' and username eq '$($request.query.username)'"
+$i=0
 foreach($id in $users.Resources.id){
     $body=remove-scimUser -path $id
+    $i++
 }
 
 
@@ -25,6 +27,6 @@ write-host ($Body | convertto-json -depth 10)
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $status
-    Body = $Body | convertto-json -depth 10
+    Body = [PSCustomObject]@{deleted=$users.totalResults} | convertto-json -depth 10
     headers = @{"Content-Type"= "application/scim+json"}
 })
