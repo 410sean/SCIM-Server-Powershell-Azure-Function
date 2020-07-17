@@ -13,7 +13,7 @@ if ($null -ne $body){
     })
     $keepgoing=$false
 }
-$users=get-scimUser -filter "PartitionKey eq 'User' and username eq '$($request.Params.path)'"
+$users=get-scimUser -filter "PartitionKey eq 'User' and username eq '$($request.query.username)'"
 foreach($id in $users.Resources.id){
     $body=remove-scimUser -path $id
 }

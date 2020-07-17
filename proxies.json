@@ -96,13 +96,6 @@
 				"route": "api/users/{path}"
 			},
 			"backendUri": "https://localhost/api/usersEndpointpatch"
-		},
-		"resetTest": {
-			"matchCondition": {
-				"methods": ["GET"],
-				"route": "api/resetTest/{path}"
-			},
-			"backendUri": "https://localhost/api/resetTest"
 		}
 	}
 }
