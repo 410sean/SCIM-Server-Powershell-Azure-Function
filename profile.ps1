@@ -1525,5 +1525,11 @@ function get-scimuseraggregation
         }
         $global:tablecache=$tablecache
     }
-    return $rows[($start-1)..($start+$count-2)],$rows.count
+    
+    if ($rows.count -le $count){
+        return @($rows),$rows.count
+    }else{
+        return $rows[($start-1)..($start+$count-2)],$rows.count
+    }
+    
  }
