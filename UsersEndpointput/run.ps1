@@ -75,15 +75,9 @@ if ($tableuser){
         }
         Add-AzTableRow -PartitionKey 'User' -RowKey $guid -Table $table.CloudTable -property $myvalue -UpdateExisting
     }
-    $tableuser=Get-AzTableRow -RowKey $userid -PartitionKey 'User' -Table $table.cloudtable
-
-    $body=new-scimuser $tableuser
+    $body=get-scimUser -path $userid
 }else{
-    $body=[pscustomobject]@{
-        schemas=@("urn:ietf:params:scim:api:messages:2.0:Error")
-        detail="User not found"
-        status=404
-    }
+    $body=new-scimError -status 404 -detail "user not found"
 }
 $status = [HttpStatusCode]::OK
 write-host ($status | convertto-json -depth 10) 
