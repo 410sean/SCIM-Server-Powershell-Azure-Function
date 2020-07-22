@@ -8,41 +8,46 @@ $currentUTCtime = (Get-Date).ToUniversalTime()
 if ($Timer.IsPastDue) {
     Write-Host "PowerShell timer is running late!"
 }
-#get users to check index
-$storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
-$table=Get-AzStorageTable -Context $storageContext -Name 'User'
-$TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
-$selectColumns=New-Object System.Collections.Generic.List[string]
-$selectColumns.add('index')
-$TableQuery.SelectColumns=$selectColumns
-$users=ExecuteQueryAsync -Table $table.CloudTable -TableQuery $TableQuery
-$users=$users.where{$_.RowKey -and $_.PartitionKey}
+if ($env:indexNeeded -or  ($null -eq $env:IndexTime) -or ($env:IndexTime -lt (get-date).ToUniversalTime().AddMinutes(-15))){
+    if ($env:indexRunning){continue}
+    $env:indexRunning=$true
+    #get users to check index
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'User'
+    $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
+    $selectColumns=New-Object System.Collections.Generic.List[string]
+    $selectColumns.add('index')
+    $TableQuery.SelectColumns=$selectColumns
+    $users=ExecuteQueryAsync -Table $table.CloudTable -TableQuery $TableQuery
+    $users=$users.where{$_.RowKey -and $_.PartitionKey}
 
-#store total
-$env:userCount=$users.count
+    #store total
+    $env:userCount=$users.count
 
-#clear index over total in case deletes happened
-foreach ($person in $users.where{$_.Properties.index.Int32Value -gt $users.count}){
-    $row=Get-AzTableRow -Table $table.CloudTable -RowKey $person.RowKey -PartitionKey $person.PartitionKey
-    $row.index=$null
-    $row | update-aztablerow -table $table.cloudtable
-    $person.Properties.index.Int32Value=$null
-}
-
-#add index num to users missing it
-$unindexed=$users.where{$null -eq $_.Properties.index.Int32Value}
-$indexenums=$users.Properties.index.Int32Value | Sort-Object
-$k=0
-for ($i=1;$i -le $users.count; $i++){
-    if ($i -notin $indexenums){
-        $row=Get-AzTableRow -Table $table.CloudTable -RowKey $unindexed[$k].RowKey -PartitionKey $unindexed[$k].PartitionKey
-        $row | Add-Member -NotePropertyName 'index' -NotePropertyValue $i
+    #clear index over total in case deletes happened
+    foreach ($person in $users.where{$_.Properties.index.Int32Value -gt $users.count}){
+        $row=Get-AzTableRow -Table $table.CloudTable -RowKey $person.RowKey -PartitionKey $person.PartitionKey
+        $row.index=$null
         $row | update-aztablerow -table $table.cloudtable
-        $k++
+        $person.Properties.index.Int32Value=$null
     }
-}   
 
-
+    #add index num to users missing it
+    $unindexed=$users.where{$null -eq $_.Properties.index.Int32Value}
+    $indexenums=$users.Properties.index.Int32Value | Sort-Object
+    $k=0
+    for ($i=1;$i -le $users.count; $i++){
+        if ($i -notin $indexenums){
+            $row=Get-AzTableRow -Table $table.CloudTable -RowKey $unindexed[$k].RowKey -PartitionKey $unindexed[$k].PartitionKey
+            $row | Add-Member -NotePropertyName 'index' -NotePropertyValue $i
+            $row | update-aztablerow -table $table.cloudtable
+            $k++
+        }
+    }
+    $env:indexNeeded=$false
+    $env:IndexTime=(get-date).ToUniversalTime()
+    $env:indexRunning=$false
+}
 
 # Write an information log with the current time.
 Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
