@@ -1505,31 +1505,24 @@ function get-scimuseraggregation
         [ValidateScript({$_ -gt 0})]
         [int]$count=200
     )
-    $tablecache=@()
-    $tablecache=$global:tablecache
-    $tablecache=$tablecache.where{$_.timestamp -ge (get-date).AddMinutes(-15).ToUniversalTime()}
-    $testagg=$tablecache.where{$_.tablequery.filterstring -eq $TableQueryFilterString -and $_.tablequery.selectColumns -eq $TableQuerySelectColumns} | Sort-Object timestamp -desc
-    if ($testagg){
-        $rows=$testagg[0].rows
-    }else{
-        $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
-        $TableQuery.FilterString=$TableQueryFilterString
-        $TableQuery.SelectColumns=$TableQuerySelectColumns
+    $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
+    $TableQuery.FilterString=$TableQueryFilterString
+    $TableQuery.SelectColumns=$TableQuerySelectColumns
+    if ($TableQuery.FilterString){
         $rows=ExecuteQueryAsync -Table $cloudtable -TableQuery $TableQuery
-        $timestamp=(get-date).ToUniversalTime()
-        $tablecache+=[pscustomobject]@{
-            timestamp=$timestamp
-            tableQuery=$TableQuery
-            totalCount=$rows.count
-            rows=$rows
+        $total=$rows.count
+        if ($rows.count -gt $count){
+            $rows=$rows[($start-1)..-1]
         }
-        $global:tablecache=$tablecache
-    }
-    
-    if ($rows.count -le $count){
-        return @($rows),$rows.count
+        if ($rows.count -gt $count){
+            $rows=$rows[0..$count]
+        }
     }else{
-        return $rows[($start-1)..($start+$count-2)],$rows.count
-    }
+        $TableQuery.FilterString="index ge '$($start)' and index lt '$($start+$count)'"
+        $rows=ExecuteQueryAsync -Table $cloudtable -TableQuery $TableQuery
+        $total=$env:usercount
+    }  
     
+    $timestamp=(get-date).ToUniversalTime()
+    return $rows,$total
  }

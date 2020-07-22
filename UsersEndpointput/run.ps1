@@ -13,31 +13,8 @@ if ($null -ne $body){
     })
     $keepgoing=$false
 }
-function new-scimuser ($prop){
-    $userobj=[pscustomobject]@{
-        schemas=@('urn:ietf:params:scim:schemas:core:2.0:User')
-        id=$prop.RowKey
-    }
-    foreach ($attr in $schemaAttributes.name.where{$_ -notin ('schemas','id')}){
-        if ($prop.$attr){$userobj | add-member -notepropertyname $attr -notepropertyvalue $prop.$attr}
-    }
-    $timestampnow=(get-date).GetDateTimeFormats()[114].replace(' ','T')
-    if ($prop.tabletimestamp){
-        $timestamp=($prop.TableTimestamp).GetDateTimeFormats()[114].replace(' ','T')
-    }else{
-        $timestamp=$timestampnow
-    }
-    $meta=[pscustomobject]@{
-        resourceType='User'
-        created = $timestamp
-        lastModified = $timestampnow
-        location="https://$($Request.Headers.'disguised-host')/api/Users/$($prop.RowKey)"
-    }
-    $userobj | add-member -notepropertyname meta -notepropertyvalue $meta
-    return $userobj
-}
-$storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
-$userid=$Request.Params.path
+$guid=$Request.Params.path
+$tableuser=get-scimuser -path $guid
 if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
     $userjson=$Request.Body | convertfrom-json -depth 100
 }else{
@@ -46,12 +23,10 @@ if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
 if (-not $userid){
     $userid=$Request.Body.id
 }
-$table=Get-AzStorageTable -Context $storageContext -Name 'User'
-$tableuser=Get-AzTableRow -RowKey $userid -PartitionKey 'User' -Table $table.cloudtable
 if ($tableuser){
     $schematable=Get-AzStorageTable -Context $storageContext -Name 'SchemaAttributes'
-    $schemaAttributes=Get-AzTableRow -Table $schematable.CloudTable
-    $update=$false
+    $schemaAttributes=
+    
     $myvalue=@{
         PartitionKey=$tableuser.PartitionKey
         RowKey=$tableuser.RowKey
