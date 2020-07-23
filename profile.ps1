@@ -1535,7 +1535,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=Add-AzTableRow -RowKey 'userCount' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
+    $rows=Add-AzTableRow -RowKey 'userCount' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$value} -UpdateExisting
     return $rows
  }
 
@@ -1556,7 +1556,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=Add-AzTableRow -RowKey 'indexRunning' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
+    $rows=Add-AzTableRow -RowKey 'indexRunning' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$value} -UpdateExisting
     return $rows
  }
 
@@ -1577,10 +1577,9 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=Add-AzTableRow -RowKey 'indexNeeded' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
+    $rows=Add-AzTableRow -RowKey 'indexNeeded' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$value} -UpdateExisting
     return $rows
  }
-
  function get-varindexNeeded {
     [cmdletbinding()]
     param ()
@@ -1597,7 +1596,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=Add-AzTableRow -RowKey 'IndexTime' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
+    $rows=Add-AzTableRow -RowKey 'IndexTime' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$value} -UpdateExisting
     return $rows
  }
 
