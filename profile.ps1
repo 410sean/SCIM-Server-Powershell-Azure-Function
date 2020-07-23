@@ -1520,9 +1520,91 @@ function get-scimuseraggregation
     }else{
         $TableQuery.FilterString="index ge '$($start)' and index lt '$($start+$count)'"
         $rows=ExecuteQueryAsync -Table $cloudtable -TableQuery $TableQuery
-        $total=$env:usercount
+        $total=get-varUserCount
     }  
     
     $timestamp=(get-date).ToUniversalTime()
     return $rows,$total
+ }
+ function set-varUserCount {
+    [cmdletbinding()]
+    param (
+        [ValidateScript({$_ -ge 0})]
+        [int]$value
+    )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'userCount' -entity @{value=$count}
+    return $rows
+ }
+
+ function get-varUserCount {
+    [cmdletbinding()]
+    param ()
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'userCount'
+    return $rows.value
+ }
+
+ function set-varindexRunning {
+    [cmdletbinding()]
+    param (
+        [ValidateScript({$_ -ge 0})]
+        [int]$value
+    )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'indexRunning' -entity @{value=$count}
+    return $rows
+ }
+
+ function get-varindexRunning {
+    [cmdletbinding()]
+    param ()
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'indexRunning'
+    return $rows.value
+ }
+
+ function set-varindexNeeded {
+    [cmdletbinding()]
+    param (
+        [ValidateScript({$_ -ge 0})]
+        [int]$value
+    )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'indexNeeded' -entity @{value=$count}
+    return $rows
+ }
+
+ function get-varindexNeeded {
+    [cmdletbinding()]
+    param ()
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'indexNeeded'
+    return $rows.value
+ }
+ function set-varIndexTime {
+    [cmdletbinding()]
+    param (
+        [ValidateScript({$_ -ge 0})]
+        [int]$value
+    )
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'IndexTime' -entity @{value=$count}
+    return $rows
+ }
+
+ function get-varIndexTime {
+    [cmdletbinding()]
+    param ()
+    $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
+    $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
+    $rows=Get-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'IndexTime'
+    return $rows.value
  }

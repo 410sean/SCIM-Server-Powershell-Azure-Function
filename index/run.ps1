@@ -8,9 +8,9 @@ $currentUTCtime = (Get-Date).ToUniversalTime()
 if ($Timer.IsPastDue) {
     Write-Host "PowerShell timer is running late!"
 }
-if ($env:indexNeeded -or  ($null -eq $env:IndexTime) -or ($env:IndexTime -lt (get-date).ToUniversalTime().AddMinutes(-15))){
-    if ($env:indexRunning){continue}
-    $env:indexRunning=$true
+if (get-varindexNeeded -or  ($null -eq (get-varIndexTime)) -or ((get-varIndexTime) -lt (get-date).ToUniversalTime().AddMinutes(-15))){
+    if (get-varindexRunning){continue}
+    set-varindexRunning -value $true
     #get users to check index
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'User'
@@ -22,7 +22,7 @@ if ($env:indexNeeded -or  ($null -eq $env:IndexTime) -or ($env:IndexTime -lt (ge
     $users=$users.where{$_.RowKey -and $_.PartitionKey}
 
     #store total
-    $env:userCount=$users.count
+    set-varuserCount -value $users.count
 
     #clear index over total in case deletes happened
     foreach ($person in $users.where{$_.Properties.index.Int32Value -gt $users.count}){
@@ -44,9 +44,9 @@ if ($env:indexNeeded -or  ($null -eq $env:IndexTime) -or ($env:IndexTime -lt (ge
             $k++
         }
     }
-    $env:indexNeeded=$false
-    $env:IndexTime=(get-date).ToUniversalTime()
-    $env:indexRunning=$false
+    set-varindexNeeded -value $false
+    set-varIndexTime -value (get-date).ToUniversalTime()
+    set-varindexRunning -value $false
 }
 
 # Write an information log with the current time.
