@@ -1526,6 +1526,7 @@ function get-scimuseraggregation
     $timestamp=(get-date).ToUniversalTime()
     return $rows,$total
  }
+ 
  function set-varUserCount {
     [cmdletbinding()]
     param (
@@ -1534,7 +1535,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'userCount' -entity @{value=$count}
+    $rows=Add-AzTableRow -RowKey 'userCount' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
     return $rows
  }
 
@@ -1555,7 +1556,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'indexRunning' -entity @{value=$count}
+    $rows=Add-AzTableRow -RowKey 'indexRunning' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
     return $rows
  }
 
@@ -1576,7 +1577,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'indexNeeded' -entity @{value=$count}
+    $rows=Add-AzTableRow -RowKey 'indexNeeded' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
     return $rows
  }
 
@@ -1596,7 +1597,7 @@ function get-scimuseraggregation
     )
     $storagecontext=New-AzStorageContext -ConnectionString $env:AzureWebJobsStorage
     $table=Get-AzStorageTable -Context $storageContext -Name 'scimConfig'
-    $rows=update-AzTableRow -Table $table.cloudtable -PartitionKey 'Var' -RowKey 'IndexTime' -entity @{value=$count}
+    $rows=Add-AzTableRow -RowKey 'IndexTime' -Table $table.CloudTable -PartitionKey 'Var' -property @{value=$count} -UpdateExisting
     return $rows
  }
 
