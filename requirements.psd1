@@ -5,5 +5,4 @@
     # For latest supported version, go to 'https://www.powershellgallery.com/packages/Az'. 
     'Az' = '3.*'
     'AzTable' = '2.*'
-    'Microsoft.AspNetCore.Mvc.NewtonsoftJson' = '3.1.6'
 }
