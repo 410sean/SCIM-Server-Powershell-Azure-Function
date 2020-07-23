@@ -8,7 +8,7 @@ $currentUTCtime = (Get-Date).ToUniversalTime()
 if ($Timer.IsPastDue) {
     Write-Host "PowerShell timer is running late!"
 }
-if (get-varindexNeeded -or  ($null -eq (get-varIndexTime)) -or ((get-varIndexTime) -lt (get-date).ToUniversalTime().AddMinutes(-15))){
+if ((get-varindexNeeded) -or  ($null -eq (get-varIndexTime)) -or ((get-varIndexTime) -lt (get-date).ToUniversalTime().AddMinutes(-15))){
     if (get-varindexRunning){continue}
     set-varindexRunning -value $true
     #get users to check index
