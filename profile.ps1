@@ -1524,7 +1524,7 @@ function get-scimuseraggregation
     }  
     
     $timestamp=(get-date).ToUniversalTime()
-    return $rows,$total
+    return @($rows),$total
  }
  
  function set-varUserCount {
