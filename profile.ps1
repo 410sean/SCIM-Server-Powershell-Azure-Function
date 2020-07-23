@@ -1508,7 +1508,7 @@ function get-scimuseraggregation
     $TableQuery = New-Object -TypeName "Microsoft.Azure.Cosmos.Table.TableQuery"
     $TableQuery.FilterString=$TableQueryFilterString
     $TableQuery.SelectColumns=$TableQuerySelectColumns
-    if ($TableQuery.FilterString){
+    if ($TableQueryFilterString.length -ne 0){
         $rows=ExecuteQueryAsync -Table $cloudtable -TableQuery $TableQuery
         $total=$rows.count
         if ($rows.count -gt $count){
@@ -1518,7 +1518,7 @@ function get-scimuseraggregation
             $rows=$rows[0..$count]
         }
     }else{
-        $TableQuery.FilterString="index ge '$($start)' and index lt '$($start+$count)'"
+        $TableQuery.FilterString="index ge $($start) and index lt $([int]$start+[int]$count)"
         $rows=ExecuteQueryAsync -Table $cloudtable -TableQuery $TableQuery
         $total=get-varUserCount
     }  
