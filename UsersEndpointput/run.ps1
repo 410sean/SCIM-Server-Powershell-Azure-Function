@@ -20,6 +20,7 @@ if ($Request.Body -ne $null -and $Request.Body.gettype().name -eq 'string'){
 }else{
     $userjson=$Request.Body
 }
+$userid=$request.Params.path
 if (-not $userid){
     $userid=$Request.Body.id
 }
